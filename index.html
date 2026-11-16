@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>لوحة الأخوين بربروسا</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --olive:#494d3c; --olive-2:#5d624d; --olive-d:#363a2c; --cream:#efe4d8; --panel:#fffbf8; --paper:#fff7f2;
+  --brick:#9b3b2a; --brick-2:#b24a37; --green:#3f5a35; --green-2:#4d6e41; --accent:#c9b8a3; --sand:#8a6a45;
+  --gold:#b8902f; --sea:#5f7d78; --sea-2:#7f9a92; --sea-3:#a9bdb4; --wood:#6b4f35;
+  --shadow:0 1px 0 rgba(73,77,60,.08), 0 12px 30px -18px rgba(73,77,60,.5);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Cairo',system-ui,sans-serif;color:var(--olive);min-height:100vh;
+  background:radial-gradient(1200px 600px at 85% -10%,rgba(201,184,163,.35),transparent 60%),var(--paper)}
+button{font-family:inherit;cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.4}
+body.busy .grid, body.busy .qpanel, body.busy .tools{pointer-events:none}
+.frame{min-height:100vh;padding:16px;display:flex;flex-direction:column}
+.inner{flex:1;border:2.5px solid var(--olive);border-radius:6px;padding:14px 20px 0;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.inner.quake{animation:quake .55s}
+@keyframes quake{0%,100%{transform:none}15%{transform:translate(-7px,3px)}30%{transform:translate(6px,-4px)}45%{transform:translate(-5px,2px)}60%{transform:translate(4px,-2px)}80%{transform:translate(-2px,1px)}}
+
+/* header */
+header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;margin-bottom:12px}
+.subt{display:block;width:100%;max-width:520px;font-family:inherit;color:var(--brick);font-weight:800;font-size:14px;background:transparent;border:0;border-bottom:1.5px dashed transparent;padding:0;outline:none}
+.subt:hover,.subt:focus{border-bottom-color:var(--accent)}
+.subt::placeholder{color:transparent}
+.subt:hover::placeholder,.subt:focus::placeholder{color:#c4b6a4}
+.brand h1{margin:0;font-size:clamp(26px,2.8vw,38px);font-weight:900;line-height:1.1;display:flex;align-items:center;gap:10px}
+.brand h1 svg{width:34px;height:34px;color:var(--sea)}
+.round{display:flex;align-items:center;gap:10px;background:var(--olive);color:var(--cream);border-radius:999px;padding:6px 22px;box-shadow:var(--shadow)}
+.round .lbl{font-size:15px;opacity:.85}
+.round .val{font-size:30px;font-weight:900;line-height:1}
+.tools{display:flex;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.tbtn{background:transparent;border:1.5px solid var(--olive);color:var(--olive);border-radius:10px;padding:6px 10px;font-weight:700;font-size:13.5px;display:inline-flex;align-items:center;gap:5px}
+.tbtn:hover:not(:disabled){background:var(--olive);color:var(--cream)}
+.tbtn svg{width:16px;height:16px}
+.tbtn.end{background:var(--brick);border-color:var(--brick);color:#fff}
+.tbtn.end:hover{background:var(--brick-2)}
+
+/* question panel */
+.qpanel{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;background:var(--olive);color:var(--cream);border-radius:20px;padding:14px 18px;margin-bottom:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.qpanel::after{content:"";position:absolute;inset:auto 0 0 0;height:5px;background:var(--turnc,var(--accent));transition:background .3s}
+.qpanel.timeup{animation:flash .9s 2}
+@keyframes flash{50%{background:var(--brick)}}
+.q-side{display:flex;flex-direction:column;gap:6px;min-width:150px}
+.q-num{font-size:15px;opacity:.85}
+.q-num b{font-size:26px;font-weight:900;opacity:1;color:#fff}
+.turn-pill{display:inline-flex;align-items:center;gap:6px;background:var(--turnc,var(--accent));color:#fff;border-radius:999px;padding:3px 14px;font-weight:900;font-size:18px;white-space:nowrap}
+.q-turnlbl{font-size:13px;opacity:.8}
+.q-main{min-width:0}
+.q-cat{display:none;margin-bottom:4px}
+.q-cat.show{display:block}
+.q-cat span{display:inline-block;font-size:13px;font-weight:800;background:rgba(239,228,216,.16);color:#f3d48a;border-radius:999px;padding:1px 12px}
+.q-text{font-size:clamp(20px,2.2vw,32px);font-weight:800;line-height:1.45;color:#fff}
+.q-text.muted{color:var(--cream);opacity:.75;font-weight:700}
+.q-ans{margin-top:6px;font-size:clamp(16px,1.6vw,22px);font-weight:800;color:#f3d48a;display:none}
+.q-ans.show{display:block;animation:pop .35s}
+.q-state{display:inline-block;margin-top:6px;font-weight:900;font-size:16px;padding:2px 12px;border-radius:999px}
+.q-state.right{background:var(--green-2);color:#fff}
+.q-state.wrong{background:var(--brick);color:#fff}
+.q-ctrl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.qb{border:0;border-radius:12px;padding:10px 14px;font-weight:800;font-size:16px;color:#fff;white-space:nowrap}
+.qb.ok{background:var(--green-2)} .qb.ok:hover:not(:disabled){background:#5a7f4d}
+.qb.no{background:var(--brick)} .qb.no:hover:not(:disabled){background:var(--brick-2)}
+.qb.soft{background:rgba(239,228,216,.14);color:var(--cream)} .qb.soft:hover:not(:disabled){background:rgba(239,228,216,.26)}
+.qb.next{background:var(--cream);color:var(--olive)} .qb.next:hover{background:#fff}
+.qb.big{font-size:20px;padding:12px 22px}
+.qb.shop{background:#6e735c} .qb.shop:hover:not(:disabled){background:#7d826a}
+.qb.atk{background:var(--brick)} .qb.atk:hover:not(:disabled){background:var(--brick-2)}
+[hidden]{display:none!important}
+.q-msg{font-size:clamp(22px,2.4vw,34px);font-weight:900;color:#fff;line-height:1.35}
+.q-msg small{display:block;font-size:clamp(14px,1.3vw,18px);font-weight:700;color:var(--cream);opacity:.85;margin-top:2px}
+.q-step{display:inline-flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.q-step span{font-size:13px;font-weight:800;border-radius:999px;padding:2px 10px;background:rgba(239,228,216,.14);color:var(--cream)}
+.q-step span.on{background:var(--cream);color:var(--olive)}
+.q-step span.done{background:var(--green-2);color:#fff}
+.autobar{height:4px;border-radius:4px;background:rgba(239,228,216,.2);margin-top:10px;overflow:hidden;display:none}
+.autobar.on{display:block}
+.autobar i{display:block;height:100%;background:var(--cream);animation:autobar var(--d,3s) linear forwards}
+@keyframes autobar{from{width:100%}to{width:0}}
+.timer{width:58px;height:58px;border-radius:50%;border:0;padding:0;display:grid;place-items:center;font-weight:900;font-size:20px;color:#fff;
+  background:conic-gradient(var(--tc,#f3d48a) calc(var(--p,1)*360deg), rgba(239,228,216,.15) 0)}
+.timer span{width:46px;height:46px;border-radius:50%;background:var(--olive);display:grid;place-items:center}
+.timer.urgent{--tc:#e0674f;animation:pulse .5s infinite alternate}
+@keyframes pulse{to{transform:scale(1.07)}}
+
+/* families */
+.grid{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));gap:16px}
+.grid.many .soldiers .num{font-size:clamp(48px,4.6vw,80px)}
+.grid.many .harbor{height:100px}
+.grid.many .ship-wrap{width:120px;margin-left:-60px}
+.fam{position:relative;background:var(--panel);border:2px solid var(--olive);border-radius:18px;padding:14px 16px 12px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:9px;transition:opacity .3s, box-shadow .3s}
+.fam::before{content:"";position:absolute;inset:0 0 auto 0;height:8px;border-radius:16px 16px 0 0;background:var(--fc)}
+.fam.is-turn{border-color:var(--fc);box-shadow:0 0 0 4px color-mix(in srgb,var(--fc) 35%,transparent),0 18px 40px -18px rgba(0,0,0,.45);animation:glow 1.6s ease-in-out infinite alternate}
+@keyframes glow{to{box-shadow:0 0 0 7px color-mix(in srgb,var(--fc) 20%,transparent),0 18px 40px -18px rgba(0,0,0,.45)}}
+.fam.not-turn{opacity:.82}
+.fam.is-dis{background:repeating-linear-gradient(135deg,var(--panel) 0 14px,#f6ece3 14px 28px)}
+.fam.is-sunk{opacity:.6;filter:grayscale(.6)}
+.fam-top{display:flex;align-items:center;gap:8px;margin-top:3px}
+.fam-name{flex:1;min-width:0;font-family:inherit;font-size:clamp(20px,1.9vw,27px);font-weight:900;color:var(--olive);background:transparent;border:0;border-bottom:1.5px dashed transparent;padding:0;outline:none}
+.fam-name:hover,.fam-name:focus{border-bottom-color:var(--accent)}
+.tag{display:inline-flex;align-items:center;gap:4px;font-weight:800;font-size:12.5px;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.tag svg{width:16px;height:16px}
+.tag.crown{color:var(--gold);background:#f7efd9}
+.tag.turn{color:#fff;background:var(--fc)}
+.ibtn{background:none;border:0;color:#9a917f;padding:4px;border-radius:8px;display:grid;place-items:center}
+.ibtn:hover{color:var(--olive);background:var(--cream)}
+.ibtn svg{width:18px;height:18px}
+.leader{font-size:13.5px;font-weight:700;color:#8f8775;margin-top:-8px}
+.badge-dis{align-self:flex-start;background:var(--brick);color:#fff;border:0;border-radius:999px;padding:3px 12px;font-weight:700;font-size:13px}
+
+.mid{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center}
+.soldiers{display:flex;flex-direction:column;align-items:center;min-width:104px}
+.soldiers .num{font-size:clamp(60px,6.2vw,100px);font-weight:900;line-height:.9;color:var(--fc);font-variant-numeric:tabular-nums;transition:transform .2s}
+.soldiers .lbl{font-size:17px;font-weight:700}
+.harbor{position:relative;height:120px;border-radius:14px;overflow:hidden;background:linear-gradient(#f6efe6,#ece2d5)}
+.harbor .sun{position:absolute;top:14px;left:18px;width:26px;height:26px;border-radius:50%;background:#f0d9a8;opacity:.8}
+.ship-wrap{position:absolute;left:50%;bottom:16px;width:150px;margin-left:-75px;transform-origin:50% 85%;
+  animation:bob 3.2s ease-in-out infinite;transition:bottom .8s}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(calc(var(--tilt,0deg) - 2deg))}50%{transform:translateY(-4px) rotate(calc(var(--tilt,0deg) + 2deg))}}
+.ship-wrap.sunk{animation:none;transform:rotate(28deg);bottom:-38px;opacity:.7}
+.ship{width:100%;display:block}
+.ship .sail{fill:var(--fc)}
+.smoke{position:absolute;width:14px;height:14px;border-radius:50%;background:rgba(90,90,80,.35);left:52%;top:38%;animation:smoke 2.2s linear infinite}
+.smoke:nth-child(2){animation-delay:.7s;left:58%} .smoke:nth-child(3){animation-delay:1.4s;left:46%}
+@keyframes smoke{0%{transform:translateY(0) scale(.6);opacity:0}20%{opacity:1}100%{transform:translateY(-60px) scale(2.2);opacity:0}}
+.flame{position:absolute;left:40%;top:56%;width:16px;height:22px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 50% 70%,#ffe08a,#f08a2c 55%,#c2401f);animation:flick .25s infinite alternate}
+@keyframes flick{to{transform:scaleY(1.25) translateY(-2px)}}
+.waves{position:absolute;left:0;bottom:0;width:200%;height:34px;animation:waves 7s linear infinite}
+.waves.w2{height:26px;animation-duration:4.5s;opacity:.9}
+@keyframes waves{to{transform:translateX(50%)}}
+.sunk-lbl{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;font-size:22px;color:var(--brick)}
+
+.troops{display:grid;grid-template-columns:repeat(25,1fr);gap:2px 3px}
+.troops svg{width:100%;height:auto;display:block;fill:var(--fc)}
+.troops svg.off{fill:var(--accent);opacity:.35}
+.troops svg.extra{fill:var(--gold)}
+
+.money{display:flex;justify-content:space-between;align-items:center;background:var(--olive);color:var(--cream);border-radius:999px;padding:4px 16px}
+.money span{font-size:14px;opacity:.85;display:flex;align-items:center;gap:6px}
+.money span svg{width:18px;height:18px}
+.money b{font-size:22px;font-weight:900}
+.inv{display:flex;flex-wrap:wrap;gap:5px;min-height:30px}
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--cream);border-radius:999px;padding:3px 10px;font-size:13.5px;font-weight:700}
+.chip svg{width:16px;height:16px;flex:none}
+.chip b{font-weight:900}
+.chip em{font-style:normal;font-weight:700;font-size:11.5px;padding:0 7px;border-radius:999px;background:var(--green);color:#fff}
+.chip em.wait{background:var(--accent);color:var(--olive)}
+.chip.dbl{background:var(--brick);color:#fff}
+.chip.used{background:transparent;box-shadow:inset 0 0 0 1.5px var(--accent);color:#9a917f;text-decoration:line-through}
+.chip.armor{background:var(--green);color:#fff}
+.acts{display:grid;grid-template-columns:1fr 1fr auto;gap:8px}
+.btn{border:0;border-radius:12px;padding:10px 8px;font-weight:800;font-size:17px;color:#fff;line-height:1.2;transition:filter .15s,transform .05s}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.b-green{background:var(--green)} .b-green:hover:not(:disabled){background:var(--green-2)}
+.b-olive{background:var(--olive)} .b-olive:hover:not(:disabled){background:var(--olive-2)}
+.b-brick{background:var(--brick)} .b-brick:hover:not(:disabled){background:var(--brick-2)}
+.b-ghost{background:transparent;color:var(--olive);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.b-ghost:hover{background:var(--cream)}
+.b-plus{background:var(--cream);color:var(--green);font-size:14px;padding:8px 12px}
+.b-plus:hover{background:#e6d8c8}
+
+/* log */
+.logwrap{margin-top:14px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;padding-bottom:84px;position:relative;z-index:1}
+.logwrap h2{margin:2px 0 0;font-size:17px;font-weight:900;white-space:nowrap}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;max-height:118px;overflow:auto}
+.log li{font-size:14.5px;display:flex;gap:8px;align-items:baseline}
+.log li .r{flex:none;font-size:12px;font-weight:800;background:var(--cream);border-radius:6px;padding:0 7px}
+.log li.hit{color:var(--brick)} .log li.block,.log li.gain{color:var(--green)} .log li.rnd{font-weight:800;color:var(--sea)}
+.log .empty{color:#9a917f}
+.sea{position:absolute;left:0;right:0;bottom:0;height:80px;pointer-events:none;overflow:hidden}
+.sea svg{position:absolute;bottom:0;left:0;width:200%;height:100%}
+.sea .s1{animation:waves 18s linear infinite} .sea .s2{animation:waves 11s linear infinite reverse}
+
+/* fx */
+.fx{position:absolute;top:30%;left:50%;transform:translate(-50%,0);font-size:72px;font-weight:900;pointer-events:none;animation:rise 1.8s ease-out forwards;text-shadow:0 3px 0 #fff,0 0 18px #fff;z-index:5;white-space:nowrap}
+.fx-hit{color:var(--brick)} .fx-gain{color:var(--green)} .fx-block{color:var(--green);font-size:48px} .fx-buy,.fx-info{color:var(--olive);font-size:38px}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,24px) scale(.6)}14%{opacity:1;transform:translate(-50%,0) scale(1.15)}24%{transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-80px)}}
+.shake{animation:shake .55s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px) rotate(-.6deg)}40%{transform:translateX(9px) rotate(.6deg)}60%{transform:translateX(-6px)}80%{transform:translateX(3px)}}
+.bump{animation:bump .5s}
+@keyframes bump{40%{transform:scale(1.04)}}
+.proj{position:fixed;left:0;top:0;width:44px;height:44px;z-index:80;pointer-events:none}
+.proj svg{width:100%;height:100%;display:block}
+.proj.ball{filter:drop-shadow(0 0 8px rgba(255,150,50,.9))}
+.proj.fire{width:76px;height:76px;filter:drop-shadow(0 0 16px rgba(255,120,30,1))}
+.proj.spy{width:58px;height:58px;color:#222}
+.proj.men{width:70px;height:40px;color:var(--green)}
+.proj.chain{width:58px;height:58px;color:var(--brick)}
+.proj.grenade{color:var(--olive-d)}
+.boom{position:fixed;z-index:81;pointer-events:none;left:0;top:0}
+.boom .core{position:absolute;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;
+  background:radial-gradient(circle,#fff6cf 0,#ffc65a 28%,#e2622d 55%,rgba(155,59,42,.6) 70%,transparent 72%);animation:core .7s ease-out forwards}
+.boom.big .core{width:220px;height:220px;margin:-110px 0 0 -110px}
+@keyframes core{0%{transform:scale(.1);opacity:1}60%{opacity:1}100%{transform:scale(1.6);opacity:0}}
+.boom .ring{position:absolute;width:140px;height:140px;margin:-70px 0 0 -70px;border-radius:50%;border:5px solid rgba(255,198,90,.8);animation:ring .7s ease-out forwards}
+@keyframes ring{0%{transform:scale(.2);opacity:1}100%{transform:scale(2);opacity:0}}
+.boom .spark{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:#ffb547;animation:spark .8s ease-out forwards}
+@keyframes spark{to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+.shieldpop{position:fixed;z-index:81;pointer-events:none;width:120px;height:120px;margin:-60px 0 0 -60px;color:var(--green);animation:shieldpop 1s ease-out forwards}
+.shieldpop svg{width:100%;height:100%;filter:drop-shadow(0 0 14px rgba(77,110,65,.8))}
+@keyframes shieldpop{0%{transform:scale(.3);opacity:0}25%{transform:scale(1.15);opacity:1}45%{transform:scale(1)}100%{transform:scale(1.05);opacity:0}}
+
+/* banner */
+.banner{position:fixed;inset:0;display:none;place-items:center;z-index:90;pointer-events:none;background:rgba(47,50,39,.35)}
+.banner.show{display:grid}
+.banner .in{background:var(--olive);color:var(--cream);border:3px solid var(--cream);outline:3px solid var(--olive);border-radius:24px;padding:18px 56px;text-align:center;animation:bannerIn 1.6s ease forwards}
+.banner small{display:block;font-size:22px;font-weight:700;opacity:.85}
+.banner b{display:block;font-size:96px;font-weight:900;line-height:1}
+@keyframes bannerIn{0%{transform:scale(.4) rotate(-6deg);opacity:0}18%{transform:scale(1.08) rotate(1deg);opacity:1}28%{transform:scale(1) rotate(0)}80%{opacity:1}100%{opacity:0;transform:scale(1.05)}}
+@keyframes pop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
+
+/* modal */
+.scrim{position:fixed;inset:0;background:rgba(47,50,39,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}
+.scrim.open{display:flex}
+.modal{background:var(--paper);border:2px solid var(--olive);border-radius:20px;width:min(660px,100%);max-height:calc(100vh - 36px);overflow:auto;box-shadow:0 30px 80px -30px rgba(0,0,0,.6);animation:pop .2s}
+.m-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 4px}
+.m-head h3{margin:0;font-size:24px;font-weight:900}
+.m-head .x{background:none;border:0;font-size:26px;color:var(--olive);line-height:1;padding:4px 8px}
+.m-sub{padding:0 20px;color:#7c7564;font-size:15px}
+.m-body{padding:12px 20px}
+.m-body p{font-size:18px;margin:6px 0 4px;line-height:1.7}
+.m-foot{display:flex;gap:8px;flex-wrap:wrap;padding:6px 20px 18px}
+.m-foot .btn{flex:1;min-width:140px}
+.list{display:flex;flex-direction:column;gap:8px}
+.opt{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;background:var(--panel);border:1.5px solid var(--accent);border-radius:14px;padding:10px 12px;text-align:right;color:var(--olive);font-family:inherit;width:100%}
+button.opt:hover:not(:disabled){border-color:var(--olive);background:#fff}
+.opt .ic{width:44px;height:44px;border-radius:12px;background:var(--cream);display:grid;place-items:center}
+.opt .ic svg{width:26px;height:26px}
+.opt .t{font-size:18px;font-weight:800;line-height:1.3}
+.opt .d{font-size:13px;color:#7c7564;font-weight:600}
+.opt .p{font-weight:900;font-size:16px;white-space:nowrap}
+.opt .p .no{display:block;font-size:12px;color:var(--brick);font-weight:700}
+.opt.atk .ic{background:var(--brick);color:#fff}
+.target{grid-template-columns:1fr auto}
+.target .t{font-size:20px}
+.target .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.target .big{font-size:30px;font-weight:900}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:700}
+.form input,.form select,.form textarea{font-family:inherit;font-size:17px;font-weight:700;color:var(--olive);background:var(--panel);border:1.5px solid var(--accent);border-radius:10px;padding:7px 10px}
+.form textarea{font-size:16px;font-weight:600;line-height:1.8;min-height:260px;resize:vertical}
+.form .full{grid-column:1/-1}
+.form .chk{flex-direction:row;align-items:center;gap:8px}
+.cats{display:flex;flex-wrap:wrap;gap:6px 14px}
+.catchk{font-size:15px!important;background:var(--panel);border:1.5px solid var(--accent);border-radius:10px;padding:5px 10px}
+.catchk small{color:#8f8775}
+.frows{display:flex;flex-direction:column;gap:8px}
+.frow{display:grid;grid-template-columns:18px 1.3fr 1fr 40px;gap:8px;align-items:center}
+.frow input{font-family:inherit;font-size:17px;font-weight:700;color:var(--olive);background:var(--panel);border:1.5px solid var(--accent);border-radius:10px;padding:8px 10px;min-width:0}
+.frow .f-l{font-size:15px;font-weight:600}
+.fdot{width:18px;height:18px;border-radius:50%}
+.fdel{border:0;background:var(--cream);color:var(--brick);border-radius:10px;height:40px;font-size:22px;font-weight:900}
+.fdel:hover{background:#f3d3c9}
+.hint{font-size:13.5px;color:#7c7564;line-height:1.7}
+.danger{margin-top:14px;border-top:1.5px dashed var(--accent);padding-top:12px}
+
+/* winner */
+.win{position:fixed;inset:0;z-index:95;display:none;background:radial-gradient(900px 600px at 50% 30%,#5d624d,#2f3227);color:var(--cream);overflow:auto}
+.win.show{display:block;animation:pop .4s}
+.win canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+.win-in{position:relative;min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;text-align:center}
+.win-kicker{font-size:22px;font-weight:700;color:var(--accent);letter-spacing:.5px}
+.trophy{width:140px;height:140px;color:#e5bd52;filter:drop-shadow(0 8px 24px rgba(229,189,82,.45));animation:trophy 2.4s ease-in-out infinite}
+@keyframes trophy{50%{transform:translateY(-8px) rotate(-3deg)}}
+.win h2{margin:6px 0 0;font-size:clamp(46px,7vw,96px);font-weight:900;line-height:1.1;color:#fff}
+.win .sub{font-size:22px;margin:4px 0 26px;color:var(--cream);opacity:.9}
+.podium{display:flex;align-items:flex-end;gap:16px;justify-content:center;margin-bottom:28px;flex-wrap:wrap}
+.pod{width:210px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.pod .nm{font-size:22px;font-weight:900}
+.pod .sc{font-size:17px;opacity:.85}
+.pod .blk{width:100%;border-radius:14px 14px 4px 4px;display:grid;place-items:center;font-size:54px;font-weight:900;color:var(--olive)}
+.pod.r1 .blk{height:170px;background:#e5bd52}
+.pod.r2 .blk{height:120px;background:#d7d2c6}
+.pod.r3 .blk{height:84px;background:#c69a6b}
+.pod svg.mini{width:110px}
+.win-acts{display:flex;gap:10px}
+.win-acts button{border:0;border-radius:14px;padding:12px 26px;font-weight:800;font-size:18px}
+.wa1{background:var(--cream);color:var(--olive)} .wa2{background:transparent;color:var(--cream);box-shadow:inset 0 0 0 2px var(--cream)}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);background:var(--olive);color:var(--cream);padding:10px 20px;border-radius:999px;font-weight:700;opacity:0;transition:.25s;z-index:99;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ===== intro walkthrough ===== */
+.tbtn.help{background:var(--sea);border-color:var(--sea);color:#fff}
+.tbtn.help:hover{background:#4f6b67;border-color:#4f6b67;color:#fff}
+.intro{position:fixed;inset:0;z-index:97;display:none;flex-direction:column;color:var(--olive);
+  background:radial-gradient(1100px 650px at 50% -5%,#fffaf3,transparent 70%),linear-gradient(#fbf4ec,#efe4d8)}
+.intro.show{display:flex}
+.i-top{display:flex;justify-content:space-between;align-items:center;padding:16px 26px}
+.i-brand{font-weight:800;color:var(--brick);font-size:16px}
+.i-skip{background:none;border:1.5px solid var(--olive);border-radius:10px;padding:6px 14px;font-weight:700;color:var(--olive);font-size:14px}
+.i-skip:hover{background:var(--olive);color:var(--cream)}
+.i-stage{flex:1;position:relative;overflow:hidden}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6px 36px;opacity:0;pointer-events:none;transform:translateX(-50px);transition:opacity .45s,transform .45s}
+.slide.active{opacity:1;pointer-events:auto;transform:none}
+.slide.past{transform:translateX(50px)}
+.slide h3{font-size:clamp(30px,3.8vw,54px);font-weight:900;margin:0 0 14px;line-height:1.2}
+.slide h3 em{font-style:normal;color:var(--brick)}
+.slide p{font-size:clamp(18px,1.8vw,25px);line-height:1.75;max-width:920px;margin:16px 0 0}
+.slide .step-kick{font-size:15px;font-weight:800;color:var(--sea);letter-spacing:.3px;margin-bottom:6px}
+.slide.active .ani{animation:popIn .5s calc(var(--i,0)*.12s + .15s) both}
+@keyframes popIn{from{transform:translateY(16px) scale(.92);opacity:0}to{transform:none;opacity:1}}
+.i-nav{display:flex;align-items:center;justify-content:space-between;padding:12px 26px 20px;gap:14px}
+.i-btn{border:0;border-radius:14px;padding:12px 28px;font-weight:800;font-size:19px}
+.i-next{background:var(--olive);color:var(--cream)} .i-next:hover{background:var(--olive-2)}
+.i-prev{background:transparent;color:var(--olive);box-shadow:inset 0 0 0 2px var(--accent)} .i-prev:hover{background:#fff}
+.i-dots{display:flex;gap:8px}
+.i-dots i{width:10px;height:10px;border-radius:5px;background:var(--accent);transition:.3s;cursor:pointer}
+.i-dots i.on{width:30px;background:var(--olive)}
+
+/* hero */
+.kick{font-size:20px;font-weight:800;color:var(--brick)}
+.hero-t{font-size:clamp(60px,9vw,132px);font-weight:900;margin:0;line-height:1.05}
+.slide.active .hero-t{animation:heroIn 1s cubic-bezier(.2,.8,.2,1.15) both}
+@keyframes heroIn{from{transform:scale(.55);opacity:0}}
+.fleet{position:relative;width:min(980px,92vw);height:180px;margin-top:18px;overflow:hidden;border-radius:22px;background:linear-gradient(#f6efe6,#e9dfd2)}
+.fleet .hs{position:absolute;bottom:20px;width:180px}
+.slide.active .fleet .hs{animation:sailIn 1.8s cubic-bezier(.2,.7,.2,1) both}
+@keyframes sailIn{from{transform:translateX(-115vw)}}
+.bobber{transform-origin:50% 85%;animation:bob 3s ease-in-out infinite}
+.fleet .waves{height:40px} .fleet .waves.w2{height:30px}
+.fam-pills{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+.fam-pills span{color:#fff;font-weight:900;font-size:clamp(18px,1.8vw,24px);padding:6px 20px;border-radius:999px}
+
+/* fleet slide */
+.demo{display:flex;align-items:center;gap:36px;margin-top:6px;flex-wrap:wrap;justify-content:center}
+.demo-num{display:flex;flex-direction:column;align-items:center}
+.demo-num b{font-size:clamp(90px,11vw,150px);font-weight:900;line-height:.9;color:var(--olive);font-variant-numeric:tabular-nums}
+.demo-num span{font-size:24px;font-weight:800}
+.demo-troops{display:grid;grid-template-columns:repeat(10,clamp(22px,2.4vw,34px));gap:8px 10px}
+.demo-troops svg{width:100%;fill:var(--olive);opacity:0}
+.slide.active .demo-troops svg{animation:popIn .3s calc(var(--i)*22ms + .25s) both}
+
+/* money slide */
+.money-demo{display:flex;align-items:center;gap:40px;flex-wrap:wrap;justify-content:center}
+.coins{position:relative;width:150px;height:170px}
+.coins i{position:absolute;left:15px;width:120px;height:34px;border-radius:50%;background:#e5bd52;box-shadow:inset 0 -6px 0 #b8902f,0 3px 0 #9c7a26;opacity:0}
+.slide.active .coins i{animation:coinDrop .5s calc(var(--i)*.18s + .2s) cubic-bezier(.3,1.4,.5,1) both}
+@keyframes coinDrop{from{transform:translateY(-220px);opacity:0}to{opacity:1}}
+.m-col{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.m-row{display:flex;align-items:center;gap:14px;background:var(--panel);border:2px solid var(--olive);border-radius:18px;padding:10px 22px}
+.m-row b{font-size:clamp(34px,3.6vw,52px);font-weight:900;line-height:1.1}
+.m-row span{font-size:clamp(17px,1.6vw,22px);font-weight:700;text-align:right}
+.m-row.plus b{color:var(--green)}
+.m-row.buy b{color:var(--brick)}
+
+/* flow slide */
+.flow{display:flex;align-items:stretch;justify-content:center;gap:8px;flex-wrap:wrap;max-width:1300px}
+.fs{width:clamp(150px,13vw,200px);background:var(--panel);border:2px solid var(--olive);border-radius:18px;padding:14px 10px 12px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.fs .fi{width:58px;height:58px;border-radius:16px;display:grid;place-items:center;background:var(--olive);color:var(--cream);font-size:28px;font-weight:900}
+.fs .fi svg{width:32px;height:32px}
+.fs b{font-size:clamp(18px,1.6vw,23px);font-weight:900}
+.fs span{font-size:14.5px;color:#6f6857;font-weight:600;line-height:1.5}
+.fs.r .fi{background:var(--green)} .fs.a .fi{background:var(--brick)} .fs.n .fi{background:var(--sea)}
+.fa{align-self:center;font-size:30px;font-weight:900;color:var(--accent)}
+.note{display:inline-block;background:var(--olive);color:var(--cream);border-radius:999px;padding:8px 22px;font-weight:800;font-size:clamp(16px,1.5vw,21px)!important;margin-top:22px!important}
+
+/* shop slide */
+.wgrid{display:grid;grid-template-columns:repeat(3,minmax(0,310px));gap:14px;perspective:900px}
+.wc{background:var(--panel);border:2px solid var(--olive);border-radius:18px;padding:14px 14px 12px;display:grid;grid-template-columns:54px 1fr;gap:4px 12px;text-align:right;align-items:center}
+.wc .wi{grid-row:span 2;width:54px;height:54px;border-radius:14px;background:var(--cream);display:grid;place-items:center}
+.wc .wi svg{width:32px;height:32px}
+.wc b{font-size:21px;font-weight:900;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.wc b em{font-style:normal;font-size:14px;background:var(--olive);color:var(--cream);border-radius:999px;padding:1px 10px;white-space:nowrap}
+.wc span{font-size:14px;color:#6f6857;font-weight:600;line-height:1.5}
+.slide.active .wc{animation:flipIn .55s calc(var(--i)*.13s + .15s) both}
+@keyframes flipIn{from{transform:rotateY(80deg);opacity:0}to{transform:none;opacity:1}}
+
+/* battle slide */
+.battle{position:relative;width:760px;flex:none;height:230px;border-radius:22px;overflow:hidden;background:linear-gradient(#f6efe6,#e9dfd2)}
+.battle .bs{position:absolute;bottom:22px;width:170px}
+.battle .bs.a{right:40px} .battle .bs.b{left:40px}
+.battle .bs.b .shk{animation:bShake 3.2s infinite}
+@keyframes bShake{0%,38%,52%,100%{transform:none}41%{transform:translateX(-9px) rotate(-3deg)}45%{transform:translateX(7px) rotate(2deg)}49%{transform:translateX(-4px)}}
+.bball{position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;background:#2b2b26;box-shadow:0 0 12px rgba(255,140,40,.9);
+  offset-path:path("M 640 120 C 520 -50 260 -50 140 125");offset-rotate:0deg;animation:bFly 3.2s infinite}
+@keyframes bFly{0%{offset-distance:0%;opacity:1}36%{offset-distance:100%;opacity:1}37%,100%{offset-distance:100%;opacity:0}}
+.bboom{position:absolute;left:140px;top:125px;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;
+  background:radial-gradient(circle,#fff6cf 0,#ffc65a 28%,#e2622d 55%,rgba(155,59,42,.5) 70%,transparent 72%);animation:bBoom 3.2s infinite;opacity:0}
+@keyframes bBoom{0%,36%{transform:scale(.1);opacity:0}38%{opacity:1}52%{transform:scale(1.4);opacity:0}100%{opacity:0}}
+.bnum{position:absolute;left:110px;top:30px;font-size:58px;font-weight:900;color:var(--brick);animation:bNum 3.2s infinite;opacity:0;text-shadow:0 3px 0 #fff}
+@keyframes bNum{0%,38%{opacity:0;transform:translateY(20px)}45%{opacity:1;transform:none}80%{opacity:1}95%,100%{opacity:0;transform:translateY(-30px)}}
+.rl{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:20px;max-width:1100px}
+.rl span{display:inline-flex;align-items:center;gap:8px;background:var(--panel);border:1.5px solid var(--accent);border-radius:999px;padding:7px 16px;font-size:clamp(15px,1.4vw,19px);font-weight:700}
+.rl svg{width:22px;height:22px}
+
+/* double slide */
+.dcard{width:300px;background:var(--panel);border:2px solid var(--olive);border-radius:22px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:var(--shadow)}
+.dcard .dt{font-size:16px;font-weight:800;color:var(--brick)}
+.dcard .dn{font-size:36px;font-weight:900}
+.dcard .dx{direction:ltr;font-size:150px;font-weight:900;line-height:1;color:var(--brick)}
+.slide.active .dcard .dx{animation:dPulse 1.4s ease-in-out .6s infinite}
+@keyframes dPulse{50%{transform:scale(1.12);text-shadow:0 0 30px rgba(226,98,45,.5)}}
+.slide.active .dcard{animation:heroIn .8s cubic-bezier(.2,.8,.2,1.15) both}
+.drow{display:flex;gap:30px;align-items:center;flex-wrap:wrap;justify-content:center}
+.dlist{display:flex;flex-direction:column;gap:10px;text-align:right}
+.dlist div{font-size:clamp(18px,1.7vw,24px);font-weight:700;background:var(--panel);border-radius:14px;padding:8px 18px;border-right:6px solid var(--brick)}
+
+/* winner slide */
+.i-trophy{width:150px;height:150px;color:#d9ad3c;filter:drop-shadow(0 10px 24px rgba(217,173,60,.45))}
+.slide.active .i-trophy{animation:heroIn .9s cubic-bezier(.2,.8,.2,1.2) both, trophy 2.4s ease-in-out 1s infinite}
+.prep{display:flex;gap:30px;align-items:center;flex-wrap:wrap;justify-content:center}
+.prep-ships{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:460px}
+.pship{position:relative;width:130px}
+.pshield{position:absolute;top:-6px;left:-4px;width:46px;height:46px;color:var(--green);filter:drop-shadow(0 2px 6px rgba(63,90,53,.4))}
+.pshield svg{width:100%;height:100%}
+.slide.active .pshield{animation:popIn .5s calc(var(--i)*.12s + .7s) both}
+.go-row{display:flex;gap:12px;margin-top:26px;flex-wrap:wrap;justify-content:center}
+.go-row button{border:0;border-radius:16px;padding:14px 30px;font-weight:900;font-size:21px}
+.go-1{background:var(--sea);color:#fff} .go-1:hover{background:#4f6b67}
+.go-2{background:var(--olive);color:var(--cream)} .go-2:hover{background:var(--olive-2)}
+
+/* spotlight tour */
+.tour{position:fixed;inset:0;z-index:96;display:none}
+.tour.show{display:block}
+.hole{position:fixed;border-radius:20px;box-shadow:0 0 0 220vmax rgba(36,38,30,.72);transition:all .45s cubic-bezier(.3,.8,.3,1);pointer-events:none;outline:3px solid #f3d48a;outline-offset:3px}
+.tip{position:fixed;width:min(400px,calc(100vw - 32px));background:var(--paper);border:2px solid var(--olive);border-radius:18px;padding:16px 18px 14px;box-shadow:0 20px 50px -20px rgba(0,0,0,.6);transition:top .45s,left .45s}
+.tip .tn{font-size:13px;font-weight:800;color:var(--sea)}
+.tip h4{margin:2px 0 4px;font-size:22px;font-weight:900}
+.tip p{margin:0;font-size:16.5px;line-height:1.7}
+.tip .tb{display:flex;gap:8px;margin-top:12px;justify-content:flex-start}
+.tip .tb button{border:0;border-radius:10px;padding:8px 18px;font-weight:800;font-size:15px}
+.tip .t-next{background:var(--olive);color:var(--cream)} .tip .t-prev{background:transparent;color:var(--olive);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.tip .t-skip{background:none;color:#8f8775;margin-inline-start:auto;text-decoration:underline}
+@media (max-width:900px){.wgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.fa{display:none}}
+
+@media (max-width:1100px){
+  .qpanel{grid-template-columns:1fr}
+  .q-side{flex-direction:row;align-items:center;justify-content:space-between}
+  .q-ctrl{justify-content:flex-start}
+}
+@media (max-width:980px){
+  header{grid-template-columns:1fr;justify-items:center;text-align:center}
+  .tools{justify-content:center}
+  .frame{padding:8px}.inner{padding:12px 12px 0}
+  .logwrap{grid-template-columns:1fr}
+}
+
+/* ===== responsive: tablets & phones ===== */
+@media (max-width:1100px){
+  .soldiers{min-width:70px}
+  .soldiers .num{font-size:clamp(44px,6vw,64px)}
+  .harbor{height:92px}
+  .ship-wrap{width:118px;margin-left:-59px;bottom:12px}
+  .fam{padding:12px 12px 10px}
+  .fam-name{font-size:20px}
+  .money b{font-size:19px}
+  .chip{font-size:12.5px;padding:2px 8px}
+  .fx{font-size:52px}
+}
+@media (max-width:640px){
+  .frame{padding:6px}.inner{padding:10px 10px 0;border-width:2px}
+  .subt{font-size:12px;text-align:center;max-width:none}
+  .brand h1{font-size:26px;justify-content:center}
+  .tbtn{font-size:12.5px;padding:5px 8px}
+  .qpanel{padding:12px;gap:10px;border-radius:16px}
+  .q-text{font-size:20px} .q-msg{font-size:20px}
+  .qb.big{font-size:17px;padding:10px 16px}
+  .q-ctrl{gap:6px}
+  .soldiers{min-width:86px}
+  .soldiers .num{font-size:64px}
+  .harbor{height:100px}
+  .fx{font-size:44px}
+  .banner .in{padding:14px 26px;margin:0 12px}
+  .banner b{font-size:clamp(44px,13vw,96px)}
+  .banner small{font-size:17px}
+  .modal{border-radius:16px}
+  .m-head h3{font-size:20px}
+  .m-body,.m-head,.m-sub,.m-foot{padding-left:14px;padding-right:14px}
+  .opt{grid-template-columns:38px 1fr auto;gap:8px;padding:8px 10px}
+  .opt .ic{width:38px;height:38px}
+  .opt .t{font-size:16px}
+  .frow{grid-template-columns:14px 1fr 1fr 36px;gap:6px}
+  .frow input{font-size:15px;padding:7px 8px}
+  .form{grid-template-columns:1fr}
+  /* walkthrough */
+  .i-top{padding:10px 12px}
+  .i-brand{font-size:13px}
+  .i-nav{padding:8px 10px 14px;gap:8px}
+  .i-btn{padding:10px 14px;font-size:15px;border-radius:12px;white-space:nowrap}
+  .i-dots{gap:4px} .i-dots i{width:7px;height:7px} .i-dots i.on{width:18px}
+  .slide{padding:4px 14px;justify-content:flex-start;padding-top:14px;overflow-y:auto}
+  .slide h3{font-size:26px;margin-bottom:10px}
+  .slide p{font-size:16px;margin-top:10px}
+  .hero-t{font-size:56px}
+  .kick{font-size:14px}
+  .fleet{height:130px;margin-top:10px}
+  .fleet .hs{bottom:14px}
+  .fam-pills span{font-size:15px;padding:4px 12px}
+  .demo{gap:16px}
+  .demo-num b{font-size:80px}
+  .demo-troops{grid-template-columns:repeat(10,24px);gap:6px}
+  .coins{width:110px;height:140px} .coins i{width:90px;left:10px;height:28px}
+  .money-demo{gap:16px}
+  .m-row{padding:8px 14px} .m-row b{font-size:28px} .m-row span{font-size:14px}
+  .fs{width:calc(50% - 6px);padding:10px 6px}
+  .fs .fi{width:46px;height:46px;font-size:22px}
+  .fs b{font-size:17px} .fs span{font-size:13px}
+  .note{font-size:14px!important;padding:6px 14px;margin-top:12px!important}
+  .wgrid{grid-template-columns:1fr 1fr;gap:8px;width:100%}
+  .wc{grid-template-columns:1fr;text-align:center;padding:10px 8px;gap:4px;justify-items:center}
+  .wc .wi{grid-row:auto;width:40px;height:40px} .wc .wi svg{width:24px;height:24px}
+  .wc b{flex-direction:column;font-size:16px;gap:2px}
+  .wc span{font-size:12.5px}
+  .rl{gap:6px;margin-top:12px} .rl span{font-size:13px;padding:5px 10px}
+  .dcard{width:220px;padding:12px} .dcard .dn{font-size:26px} .dcard .dx{font-size:96px}
+  .drow{gap:14px}
+  .dlist div{font-size:15px;padding:7px 12px}
+  .pship{width:96px} .pshield{width:34px;height:34px}
+  .prep{gap:14px}
+  .i-trophy{width:110px;height:110px}
+  .go-row button{font-size:17px;padding:12px 20px}
+  .tip h4{font-size:19px} .tip p{font-size:15px}
+  /* winner */
+  .win h2{font-size:52px}
+  .win .sub{font-size:17px;margin-bottom:16px}
+  .trophy{width:100px;height:100px}
+  .podium{flex-direction:column;align-items:stretch;gap:8px;width:100%;max-width:360px}
+  .pod{width:100%;flex-direction:row;gap:10px;order:var(--o,0)}
+  .pod svg.mini{width:64px}
+  .pod .nm{font-size:18px;flex:1;text-align:right}
+  .pod .sc{font-size:13px}
+  .pod .blk{width:56px;height:56px!important;border-radius:12px;font-size:28px;flex:none}
+  .win-acts button{padding:10px 18px;font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="sol" viewBox="0 0 10 14"><circle cx="5" cy="2.9" r="2.6"/><path d="M.8 14V8.6C.8 6.6 2.7 5.9 5 5.9s4.2.7 4.2 2.7V14z"/></symbol>
+  <symbol id="wave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 18 C25 8 50 8 75 18 S125 28 150 18 S200 8 225 18 S275 28 300 18 S350 8 375 18 S400 22 400 18 V40 H0 Z"/></symbol>
+</svg>
+
+<div class="frame"><div class="inner" id="inner">
+  <header>
+    <div class="brand">
+      <input class="subt" id="subt" maxlength="80" placeholder="اكتب عنوانًا هنا (اختياري)" title="اضغط لتعديل العنوان أو حذفه" aria-label="العنوان الفرعي">
+      <h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="4.5" r="2"/><path d="M12 6.5V21M7 10h10M4 14c0 4 3.6 7 8 7s8-3 8-7"/><path d="M4 14l-1.5 1.5M20 14l1.5 1.5"/></svg>الأخوين بربروسا</h1>
+    </div>
+    <div class="round"><span class="lbl">الجولة</span><span class="val" id="round">١</span></div>
+    <div class="tools">
+      <button class="tbtn" id="undo" title="تراجع عن آخر خطوة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 7h-5a6 6 0 0 0 0 12h7"/><path d="M14 3l4 4-4 4"/></svg>تراجع</button>
+      <button class="tbtn help" id="help">شرح المسابقة</button>
+      <button class="tbtn" id="famsBtn">الأسر</button>
+      <button class="tbtn" id="bank">بنك الأسئلة</button>
+      <button class="tbtn" id="settings">الإعدادات</button>
+      <button class="tbtn" id="mute" title="الصوت"></button>
+      <button class="tbtn" id="fs" title="ملء الشاشة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      <button class="tbtn end" id="endBtn">إنهاء المسابقة</button>
+    </div>
+  </header>
+
+  <section class="qpanel" id="qpanel">
+    <div class="q-side">
+      <div class="q-num">السؤال <b id="qNum">١</b></div>
+      <div><div class="q-turnlbl">الدور على</div><span class="turn-pill" id="qTurn"></span></div>
+    </div>
+    <div class="q-main">
+      <div class="q-cat" id="qCat"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="q-ans" id="qAns"></div>
+      <div id="qState"></div>
+      <div class="q-step" id="qStep"></div>
+      <div class="autobar" id="autobar"><i></i></div>
+    </div>
+    <div class="q-ctrl">
+      <button class="timer" id="qTimer" title="مؤقت السؤال"><span id="qTimerVal">٣٠</span></button>
+      <button class="qb soft" id="qReveal">إظهار الجواب</button>
+      <button class="qb ok big" id="qRight">صح ✓</button>
+      <button class="qb no big" id="qWrong">خطأ ✗</button>
+      <button class="qb shop big" id="qShop">شراء</button>
+      <button class="qb atk big" id="qAttack">هجوم</button>
+      <button class="qb next" id="qEnd">إنهاء الدور ←</button>
+    </div>
+  </section>
+
+  <section class="grid" id="grid"></section>
+
+  <section class="logwrap">
+    <h2>سجل المعركة</h2>
+    <ul class="log" id="log"></ul>
+  </section>
+
+  <div class="sea" aria-hidden="true">
+    <svg class="s1" viewBox="0 0 800 80" preserveAspectRatio="none"><use href="#wave" x="0" y="20" width="400" height="60" fill="#a9bdb4" opacity=".45"/><use href="#wave" x="400" y="20" width="400" height="60" fill="#a9bdb4" opacity=".45"/></svg>
+    <svg class="s2" viewBox="0 0 800 80" preserveAspectRatio="none"><use href="#wave" x="0" y="42" width="400" height="38" fill="#7f9a92" opacity=".45"/><use href="#wave" x="400" y="42" width="400" height="38" fill="#7f9a92" opacity=".45"/></svg>
+  </div>
+</div></div>
+
+<div class="scrim" id="scrim"><div class="modal" role="dialog" aria-modal="true">
+  <div class="m-head"><h3 id="mTitle"></h3><button class="x" id="mClose" aria-label="إغلاق">×</button></div>
+  <div class="m-sub" id="mSub"></div>
+  <div class="m-body" id="mBody"></div>
+  <div class="m-foot" id="mFoot"></div>
+</div></div>
+
+<div class="banner" id="banner"><div class="in"><small id="bannerSmall">الجولة</small><b id="bannerBig">٢</b></div></div>
+
+<div class="win" id="win"><canvas id="conf"></canvas><div class="win-in">
+  <div class="win-kicker" id="winKicker">انتهت المعركة</div>
+  <svg class="trophy" viewBox="0 0 24 24" fill="currentColor"><path d="M7 3h10v2h3v2.5c0 2.6-1.9 4.7-4.4 5A5 5 0 0 1 13 15.9V18h3v3H8v-3h3v-2.1a5 5 0 0 1-2.6-3.4C5.9 12.2 4 10.1 4 7.5V5h3zm0 4H6v.5c0 1.3.8 2.4 2 2.8A9 9 0 0 1 7 7zm10 0c0 1.2-.3 2.3-1 3.3 1.2-.4 2-1.5 2-2.8V7z"/></svg>
+  <h2 id="winName"></h2>
+  <div class="sub" id="winSub"></div>
+  <div class="podium" id="podium"></div>
+  <div class="win-acts"><button class="wa1" id="winBack">رجوع للوحة</button><button class="wa2" id="winNew">مسابقة جديدة</button></div>
+</div></div>
+<div class="intro" id="intro" role="dialog" aria-label="شرح المسابقة">
+  <div class="i-top"><span class="i-brand">الأخوين بربروسا · طريقة اللعب</span><button class="i-skip" id="iSkip">تخطي الشرح</button></div>
+  <div class="i-stage" id="iStage"></div>
+  <div class="i-nav">
+    <button class="i-btn i-prev" id="iPrev">→ السابق</button>
+    <div class="i-dots" id="iDots"></div>
+    <button class="i-btn i-next" id="iNext">التالي ←</button>
+  </div>
+</div>
+<div class="tour" id="tour"><div class="hole" id="hole"></div>
+  <div class="tip" id="tip"><div class="tn" id="tipN"></div><h4 id="tipH"></h4><p id="tipP"></p>
+    <div class="tb"><button class="t-prev" id="tPrev">السابق</button><button class="t-next" id="tNext">التالي</button><button class="t-skip" id="tSkip">إنهاء</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== icons ===== */
+const ICON={
+  cannon:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="7" width="16" height="6.5" rx="3.2" transform="rotate(-18 14 10)"/><circle cx="8" cy="16.5" r="4.6"/><circle cx="8" cy="16.5" r="1.6" fill="#fffbf8"/></svg>',
+  grenade:'<svg viewBox="0 0 24 24" fill="currentColor"><ellipse cx="11" cy="15" rx="6.2" ry="7"/><rect x="8.5" y="4" width="5" height="4.2" rx="1"/><rect x="13" y="4.6" width="6.5" height="2" rx="1"/></svg>',
+  disable:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/></svg>',
+  anti:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/></svg>',
+  armor:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.5c.8 0 1.4.6 1.4 1.4v1.3C17.3 5 20 8.6 20 13v6.5h-6v-6h-4v6H4V13c0-4.4 2.7-8 6.6-8.8V2.9c0-.8.6-1.4 1.4-1.4z"/></svg>',
+  spy:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.5 11h19l-3-1.4L16.6 4 12 5.8 7.4 4 5.5 9.6z"/><circle cx="7.8" cy="16" r="3.2"/><circle cx="16.2" cy="16" r="3.2"/><rect x="10.2" y="15" width="3.6" height="1.6" rx=".8"/></svg>',
+  double:'<svg viewBox="0 0 24 24"><text x="12" y="17.5" text-anchor="middle" font-family="Cairo,sans-serif" font-weight="900" font-size="15" fill="currentColor">×٢</text></svg>',
+  crown:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 18.5L4.6 7.5l4.6 4.3L12 5l2.8 6.8 4.6-4.3L21 18.5z"/></svg>',
+  coin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="7" rx="7" ry="3"/><path d="M5 7v5c0 1.7 3.1 3 7 3s7-1.3 7-3V7M5 12v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>',
+  ball:'<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="#2b2b26"/><circle cx="15.5" cy="15.5" r="3.5" fill="#77776a"/></svg>',
+  fire:'<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#f08a2c" opacity=".55"/><circle cx="20" cy="20" r="12" fill="#c2401f"/><circle cx="20" cy="20" r="7" fill="#ffd36b"/></svg>',
+  men:'<svg viewBox="0 0 34 16" fill="currentColor"><use href="#sol" x="0" y="1" width="10" height="14"/><use href="#sol" x="12" y="0" width="10" height="15"/><use href="#sol" x="24" y="1" width="10" height="14"/></svg>',
+  soundOn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>',
+  soundOff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>'
+};
+function shipSVG(){return `<svg class="ship" viewBox="0 0 160 110">
+  <path d="M80 8V80" stroke="#3b2f22" stroke-width="3.5"/><path d="M50 30H112" stroke="#3b2f22" stroke-width="2.5"/>
+  <path class="sail" d="M82 14C106 22 112 48 106 70H82Z"/><path class="sail" d="M78 22C58 32 54 54 58 70H78Z" opacity=".78"/>
+  <path d="M80 8L101 4 80 0Z" fill="#9b3b2a"/>
+  <path d="M14 72H146L131 98C112 105 48 105 29 98Z" fill="#6b4f35"/><path d="M22 81H138" stroke="#8a6a45" stroke-width="3"/>
+  <circle cx="50" cy="89" r="3.2" fill="#3b2f22"/><circle cx="72" cy="90" r="3.2" fill="#3b2f22"/><circle cx="94" cy="90" r="3.2" fill="#3b2f22"/><circle cx="116" cy="89" r="3.2" fill="#3b2f22"/>
+</svg>`}
+const WAVES=`<svg class="waves" viewBox="0 0 800 34" preserveAspectRatio="none"><use href="#wave" x="0" y="0" width="400" height="34" fill="#a9bdb4"/><use href="#wave" x="400" y="0" width="400" height="34" fill="#a9bdb4"/></svg>
+<svg class="waves w2" viewBox="0 0 800 26" preserveAspectRatio="none"><use href="#wave" x="0" y="0" width="400" height="26" fill="#7f9a92"/><use href="#wave" x="400" y="0" width="400" height="26" fill="#7f9a92"/></svg>`;
+
+/* ===== game data ===== */
+const W={
+  cannon:{n:'مدفع',p:15000,d:'يقتل ٨ جنود · يبقى معكم ويُستخدم مرة كل جولة',kill:8},
+  grenade:{n:'قنبلة يدوية',p:5000,d:'تقتل ٤ جنود · تُستخدم مرة واحدة',kill:4},
+  spy:{n:'إرسال جاسوس',p:18000,d:'يسحب ١٠ جنود من أسرة ويضمهم لجيشكم'},
+  disable:{n:'تعطيل أسطول',p:12000,d:'تمنع أسرة من استخدام أسلحتها جولة كاملة'},
+  anti:{n:'مضاد قذائف',p:7000,d:'يصد قذيفة واحدة'},
+  armor:{n:'تدريع الجنود',p:20000,d:'يصد كل القنابل اليدوية طوال المسابقة'},
+  double:{n:'كرت مضاعفة',p:0,d:'قذيفة لا تُصد تقتل ١٦ · بشرط الفوز في «أسرع جواب»',kill:16}
+};
+/* built-in question bank (filled from the organiser's files) */
+const BUILTIN=[{"q":"في أي عام وُلد النبي ﷺ؟","a":"عام الفيل","c":"السيرة النبوية"},{"q":"في أي شهر وُلد النبي ﷺ؟","a":"ربيع الأول","c":"السيرة النبوية"},{"q":"في أي يوم من أيام الأسبوع وُلد النبي ﷺ؟","a":"يوم الاثنين","c":"السيرة النبوية"},{"q":"ما اسم والدة النبي ﷺ؟","a":"آمنة بنت وهب","c":"السيرة النبوية"},{"q":"ما اسم والد النبي ﷺ؟","a":"عبدالله بن عبدالمطلب","c":"السيرة النبوية"},{"q":"من أول من أرضعت النبي ﷺ بعد أمه؟","a":"ثويبة مولاة أبي لهب","c":"السيرة النبوية"},{"q":"ما اسم مرضعة النبي ﷺ التي عاش عندها في البادية؟","a":"حليمة السعدية","c":"السيرة النبوية"},{"q":"في بادية أي قبيلة قضى النبي ﷺ رضاعته؟","a":"بني سعد","c":"السيرة النبوية"},{"q":"من هي حاضنة النبي ﷺ؟","a":"أم أيمن بركة","c":"السيرة النبوية"},{"q":"من هي أخت النبي ﷺ من الرضاعة؟","a":"الشيماء بنت الحارث","c":"السيرة النبوية"},{"q":"أين توفيت آمنة أم النبي ﷺ؟","a":"في الأبواء بين مكة والمدينة","c":"السيرة النبوية"},{"q":"كم كان عمر النبي ﷺ حين توفيت أمه؟","a":"ست سنوات","c":"السيرة النبوية"},{"q":"من كفل النبي ﷺ بعد وفاة أمه؟","a":"جده عبدالمطلب","c":"السيرة النبوية"},{"q":"كم كان عمر النبي ﷺ حين توفي جده عبدالمطلب؟","a":"ثماني سنوات","c":"السيرة النبوية"},{"q":"من كفل النبي ﷺ بعد وفاة جده؟","a":"عمه أبو طالب","c":"السيرة النبوية"},{"q":"ما العمل الذي عمله النبي ﷺ في صغره؟","a":"رعي الغنم","c":"السيرة النبوية"},{"q":"ما العمل الذي عمله النبي ﷺ في شبابه؟","a":"التجارة","c":"السيرة النبوية"},{"q":"إلى أي بلاد سافر النبي ﷺ بتجارة خديجة رضي الله عنها؟","a":"الشام","c":"السيرة النبوية"},{"q":"بماذا كانت قريش تلقّب النبي ﷺ قبل البعثة؟","a":"الصادق الأمين","c":"السيرة النبوية"},{"q":"من هي أولى زوجات النبي ﷺ؟","a":"خديجة بنت خويلد","c":"السيرة النبوية"},{"q":"كم كان عمر النبي ﷺ حين تزوج خديجة؟","a":"خمس وعشرون سنة","c":"السيرة النبوية"},{"q":"كم كان عمر النبي ﷺ حين أعادت قريش بناء الكعبة؟","a":"خمس وثلاثون سنة","c":"السيرة النبوية"},{"q":"من وضع الحجر الأسود في مكانه حين اختلفت قبائل قريش عند بناء الكعبة؟","a":"النبي ﷺ","c":"السيرة النبوية"},{"q":"في أي غار كان النبي ﷺ يتعبد قبل البعثة؟","a":"غار حراء","c":"السيرة النبوية"},{"q":"في أي جبل يقع غار حراء؟","a":"جبل النور","c":"السيرة النبوية"},{"q":"كم كان عمر النبي ﷺ حين بُعث؟","a":"أربعون سنة","c":"السيرة النبوية"},{"q":"ما أول ما نزل من القرآن الكريم؟","a":"أول سورة العلق «اقرأ باسم ربك الذي خلق»","c":"السيرة النبوية"},{"q":"ما اسم المَلَك الذي نزل بالوحي على النبي ﷺ؟","a":"جبريل عليه السلام","c":"السيرة النبوية"},{"q":"إلى من رجع النبي ﷺ يقول «زمّلوني زمّلوني» بعد أول لقاء بجبريل؟","a":"زوجته خديجة رضي الله عنها","c":"السيرة النبوية"},{"q":"من الرجل الذي ذهبت خديجة بالنبي ﷺ إليه بعد نزول الوحي، وكان عالمًا بالكتب السابقة؟","a":"ورقة بن نوفل","c":"السيرة النبوية"},{"q":"من أول من أسلم من الرجال؟","a":"أبو بكر الصديق","c":"السيرة النبوية"},{"q":"من أول من أسلم من الصبيان؟","a":"علي بن أبي طالب","c":"السيرة النبوية"},{"q":"من أول من أسلم من الموالي؟","a":"زيد بن حارثة","c":"السيرة النبوية"},{"q":"من أول من أسلم من النساء؟","a":"خديجة بنت خويلد","c":"السيرة النبوية"},{"q":"في دار من كان النبي ﷺ يجتمع بأصحابه سرًّا في مكة؟","a":"دار الأرقم بن أبي الأرقم","c":"السيرة النبوية"},{"q":"من الذي كان يعذّب بلال بن رباح في مكة؟","a":"أمية بن خلف","c":"السيرة النبوية"},{"q":"ماذا كان يردد بلال رضي الله عنه وهو يُعذَّب؟","a":"أحدٌ أحد","c":"السيرة النبوية"},{"q":"من أول شهيدة في الإسلام؟","a":"سمية بنت خياط أم عمار بن ياسر","c":"السيرة النبوية"},{"q":"إلى أين كانت أول هجرة في الإسلام؟","a":"إلى الحبشة","c":"السيرة النبوية"},{"q":"ما لقب ملك الحبشة الذي آوى المسلمين المهاجرين؟","a":"النجاشي","c":"السيرة النبوية"},{"q":"من الصحابي الذي تكلم باسم المسلمين أمام النجاشي؟","a":"جعفر بن أبي طالب","c":"السيرة النبوية"},{"q":"كم سنة استمر حصار قريش للمسلمين في شِعب أبي طالب؟","a":"ثلاث سنوات","c":"السيرة النبوية"},{"q":"ماذا سُمّي العام الذي توفيت فيه خديجة وأبو طالب؟","a":"عام الحزن","c":"السيرة النبوية"},{"q":"إلى أي مدينة خرج النبي ﷺ يدعو أهلها بعد وفاة أبي طالب؟","a":"الطائف","c":"السيرة النبوية"},{"q":"ما اسم الدابة التي ركبها النبي ﷺ ليلة الإسراء؟","a":"البُراق","c":"السيرة النبوية"},{"q":"من أين وإلى أين كانت رحلة الإسراء؟","a":"من المسجد الحرام إلى المسجد الأقصى","c":"السيرة النبوية"},{"q":"ما العبادة التي فُرضت على النبي ﷺ في رحلة المعراج؟","a":"الصلاة","c":"السيرة النبوية"},{"q":"كم صلاة فُرضت أول الأمر ليلة المعراج قبل أن تُخفف إلى خمس؟","a":"خمسون صلاة","c":"السيرة النبوية"},{"q":"من النبي الذي قابله النبي ﷺ في السماء الأولى ليلة المعراج؟","a":"آدم عليه السلام","c":"السيرة النبوية"},{"q":"من النبي الذي قابله النبي ﷺ في السماء السادسة ليلة المعراج؟","a":"موسى عليه السلام","c":"السيرة النبوية"},{"q":"من النبي الذي قابله النبي ﷺ في السماء السابعة ليلة المعراج؟","a":"إبراهيم عليه السلام","c":"السيرة النبوية"},{"q":"من الصحابي الذي أرسله النبي ﷺ إلى المدينة قبل الهجرة ليعلّم أهلها الإسلام؟","a":"مصعب بن عمير","c":"السيرة النبوية"},{"q":"كم كان عدد من بايع النبي ﷺ في بيعة العقبة الثانية؟","a":"ثلاثة وسبعون رجلًا وامرأتان","c":"السيرة النبوية"},{"q":"من الصحابي الذي نام في فراش النبي ﷺ ليلة الهجرة؟","a":"علي بن أبي طالب","c":"السيرة النبوية"},{"q":"من الصحابي الذي رافق النبي ﷺ في الهجرة؟","a":"أبو بكر الصديق","c":"السيرة النبوية"},{"q":"في أي غار اختبأ النبي ﷺ وصاحبه أثناء الهجرة؟","a":"غار ثور","c":"السيرة النبوية"},{"q":"كم ليلة مكث النبي ﷺ في غار ثور؟","a":"ثلاث ليالٍ","c":"السيرة النبوية"},{"q":"من الصحابية الملقبة بذات النطاقين؟","a":"أسماء بنت أبي بكر","c":"السيرة النبوية"},{"q":"ما اسم الدليل الذي استأجره النبي ﷺ ليدله على طريق الهجرة؟","a":"عبدالله بن أُريقط","c":"السيرة النبوية"},{"q":"من الذي لحق بالنبي ﷺ في الهجرة طمعًا في الجائزة فغاصت قوائم فرسه في الرمل؟","a":"سراقة بن مالك","c":"السيرة النبوية"},{"q":"بماذا وعد النبي ﷺ سراقة بن مالك؟","a":"بسواري كسرى","c":"السيرة النبوية"},{"q":"ما أول مسجد بُني في الإسلام؟","a":"مسجد قباء","c":"السيرة النبوية"},{"q":"في بيت أي صحابي نزل النبي ﷺ حين وصل إلى المدينة؟","a":"أبو أيوب الأنصاري","c":"السيرة النبوية"},{"q":"ما اسم ناقة النبي ﷺ التي هاجر عليها؟","a":"القصواء","c":"السيرة النبوية"},{"q":"ماذا عقد النبي ﷺ بين المهاجرين والأنصار بعد الهجرة؟","a":"المؤاخاة","c":"السيرة النبوية"},{"q":"من الصحابي الذي رأى ألفاظ الأذان في منامه؟","a":"عبدالله بن زيد","c":"السيرة النبوية"},{"q":"من أول مؤذن في الإسلام؟","a":"بلال بن رباح","c":"السيرة النبوية"},{"q":"في أي سنة فُرض صيام رمضان؟","a":"السنة الثانية للهجرة","c":"السيرة النبوية"},{"q":"في أي سنة وقعت غزوة بدر الكبرى؟","a":"السنة الثانية للهجرة","c":"السيرة النبوية"},{"q":"في أي شهر وقعت غزوة بدر الكبرى؟","a":"رمضان","c":"السيرة النبوية"},{"q":"كم كان عدد المسلمين تقريبًا في غزوة بدر؟","a":"ثلاثمائة وبضعة عشر رجلًا","c":"السيرة النبوية"},{"q":"بماذا سمّى الله يوم بدر في القرآن الكريم؟","a":"يوم الفرقان","c":"السيرة النبوية"},{"q":"من الذي وصفه النبي ﷺ بفرعون هذه الأمة وقُتل يوم بدر؟","a":"أبو جهل","c":"السيرة النبوية"},{"q":"في أي سنة وقعت غزوة أُحد؟","a":"السنة الثالثة للهجرة","c":"السيرة النبوية"},{"q":"كم عدد الرماة الذين وضعهم النبي ﷺ على جبل الرماة يوم أحد؟","a":"خمسون راميًا","c":"السيرة النبوية"},{"q":"من قائد الرماة يوم أحد؟","a":"عبدالله بن جبير","c":"السيرة النبوية"},{"q":"من الذي قتل حمزة بن عبدالمطلب يوم أحد؟","a":"وحشي بن حرب قبل إسلامه","c":"السيرة النبوية"},{"q":"بماذا لُقّب حمزة بن عبدالمطلب رضي الله عنه؟","a":"أسد الله وسيد الشهداء","c":"السيرة النبوية"},{"q":"كم كان عدد شهداء المسلمين يوم أحد؟","a":"سبعون شهيدًا","c":"السيرة النبوية"},{"q":"في أي سورة نزلت آيات كثيرة عن غزوة أحد؟","a":"سورة آل عمران","c":"السيرة النبوية"},{"q":"في أي سنة وقعت غزوة الخندق (الأحزاب)؟","a":"السنة الخامسة للهجرة","c":"السيرة النبوية"},{"q":"من الصحابي الذي أشار على النبي ﷺ بحفر الخندق؟","a":"سلمان الفارسي","c":"السيرة النبوية"},{"q":"بماذا نصر الله المسلمين في غزوة الأحزاب؟","a":"بالريح الشديدة والملائكة","c":"السيرة النبوية"},{"q":"من الصحابي الذي أرسله النبي ﷺ ليلة الأحزاب ليأتيه بخبر المشركين؟","a":"حذيفة بن اليمان","c":"السيرة النبوية"},{"q":"في أي سنة كان صلح الحديبية؟","a":"السنة السادسة للهجرة","c":"السيرة النبوية"},{"q":"ما اسم البيعة التي بايع فيها الصحابة النبي ﷺ تحت الشجرة في الحديبية؟","a":"بيعة الرضوان","c":"السيرة النبوية"},{"q":"من الذي كتب وثيقة صلح الحديبية؟","a":"علي بن أبي طالب","c":"السيرة النبوية"},{"q":"من الذي فاوض النبي ﷺ باسم قريش في صلح الحديبية؟","a":"سهيل بن عمرو","c":"السيرة النبوية"},{"q":"كم كانت مدة الهدنة في صلح الحديبية؟","a":"عشر سنين","c":"السيرة النبوية"},{"q":"ما السورة التي نزلت بعد صلح الحديبية؟","a":"سورة الفتح","c":"السيرة النبوية"},{"q":"في أي سنة وقعت غزوة خيبر؟","a":"السنة السابعة للهجرة","c":"السيرة النبوية"},{"q":"من الصحابي الذي أعطاه النبي ﷺ الراية يوم خيبر ففتح الله على يديه؟","a":"علي بن أبي طالب","c":"السيرة النبوية"},{"q":"في أي سنة وقعت غزوة مؤتة؟","a":"السنة الثامنة للهجرة","c":"السيرة النبوية"},{"q":"من هم القادة الثلاثة الذين استشهدوا في غزوة مؤتة؟","a":"زيد بن حارثة وجعفر بن أبي طالب وعبدالله بن رواحة","c":"السيرة النبوية"},{"q":"بماذا لُقّب جعفر بن أبي طالب بعد استشهاده في مؤتة؟","a":"جعفر الطيّار","c":"السيرة النبوية"},{"q":"في أي سنة كان فتح مكة؟","a":"السنة الثامنة للهجرة","c":"السيرة النبوية"},{"q":"في أي شهر كان فتح مكة؟","a":"رمضان","c":"السيرة النبوية"},{"q":"كم كان عدد جيش المسلمين في فتح مكة؟","a":"عشرة آلاف","c":"السيرة النبوية"},{"q":"ما الغزوة التي أعجبت المسلمين فيها كثرتهم ثم ثبّت الله نبيه ﷺ ونصره؟","a":"غزوة حنين","c":"السيرة النبوية"},{"q":"ما آخر غزوة غزاها النبي ﷺ؟","a":"غزوة تبوك","c":"السيرة النبوية"},{"q":"ماذا سُمّي جيش غزوة تبوك؟","a":"جيش العُسرة","c":"السيرة النبوية"},{"q":"من الصحابي الذي جهّز جيش العسرة من ماله؟","a":"عثمان بن عفان","c":"السيرة النبوية"},{"q":"في أي سنة كانت حجة الوداع؟","a":"السنة العاشرة للهجرة","c":"السيرة النبوية"},{"q":"كم مرة حجّ النبي ﷺ بعد الهجرة؟","a":"مرة واحدة: حجة الوداع","c":"السيرة النبوية"},{"q":"من الصحابي الذي أمره النبي ﷺ أن يصلي بالناس في مرضه الأخير؟","a":"أبو بكر الصديق","c":"السيرة النبوية"},{"q":"في بيت من توفي النبي ﷺ؟","a":"في بيت عائشة رضي الله عنها","c":"السيرة النبوية"},{"q":"كم كان عمر النبي ﷺ حين توفي؟","a":"ثلاث وستون سنة","c":"السيرة النبوية"},{"q":"في أي يوم من أيام الأسبوع توفي النبي ﷺ؟","a":"يوم الاثنين","c":"السيرة النبوية"},{"q":"في أي سنة توفي النبي ﷺ؟","a":"السنة الحادية عشرة للهجرة","c":"السيرة النبوية"},{"q":"ما أسماء أبناء النبي ﷺ الذكور؟","a":"القاسم وعبدالله وإبراهيم","c":"السيرة النبوية"},{"q":"ما أسماء بنات النبي ﷺ؟","a":"زينب ورقية وأم كلثوم وفاطمة","c":"السيرة النبوية"},{"q":"بأي أبنائه كان النبي ﷺ يُكنى؟","a":"القاسم (أبو القاسم)","c":"السيرة النبوية"},{"q":"من أم إبراهيم ابن النبي ﷺ؟","a":"مارية القبطية","c":"السيرة النبوية"},{"q":"من آخر أبناء النبي ﷺ وفاةً؟","a":"فاطمة رضي الله عنها","c":"السيرة النبوية"},{"q":"ما اسم سيف النبي ﷺ المشهور؟","a":"ذو الفقار","c":"السيرة النبوية"},{"q":"ما اسم بغلة النبي ﷺ؟","a":"دُلدُل","c":"السيرة النبوية"},{"q":"من أي معدن كان خاتم النبي ﷺ؟","a":"الفضة","c":"السيرة النبوية"},{"q":"ماذا كان منقوشًا على خاتم النبي ﷺ؟","a":"محمد رسول الله","c":"السيرة النبوية"},{"q":"ما الجزء الذي كان يحبه النبي ﷺ من اللحم؟","a":"الذراع","c":"السيرة النبوية"},{"q":"ما الدُّبّاء الذي كان يحبه النبي ﷺ؟","a":"القرع","c":"السيرة النبوية"},{"q":"ما غالب ضحك النبي ﷺ؟","a":"التبسّم","c":"السيرة النبوية"},{"q":"على أي جنب كان النبي ﷺ ينام؟","a":"على جنبه الأيمن","c":"السيرة النبوية"},{"q":"أين يقع خاتم النبوة في جسد النبي ﷺ؟","a":"بين كتفيه","c":"السيرة النبوية"},{"q":"من أشبه الأنبياء خِلقةً بالنبي ﷺ؟","a":"إبراهيم عليه السلام","c":"السيرة النبوية"},{"q":"ما معنى «العاقب» من أسماء النبي ﷺ؟","a":"الذي ليس بعده نبي","c":"السيرة النبوية"},{"q":"من الصحابي الذي حمل رسالة النبي ﷺ إلى هرقل ملك الروم؟","a":"دحية الكلبي","c":"السيرة النبوية"},{"q":"من الصحابي الذي حمل رسالة النبي ﷺ إلى المقوقس عظيم مصر؟","a":"حاطب بن أبي بلتعة","c":"السيرة النبوية"},{"q":"من الصحابي الذي خدم النبي ﷺ عشر سنين؟","a":"أنس بن مالك","c":"السيرة النبوية"},{"q":"من الصحابي الملقب بحِبّ رسول الله ﷺ؟","a":"زيد بن حارثة، وابنه أسامة الحِبّ ابن الحِبّ","c":"السيرة النبوية"},{"q":"من عمّ النبي ﷺ الذي نزلت فيه سورة المسد؟","a":"أبو لهب","c":"السيرة النبوية"},{"q":"كم عدد سور القرآن الكريم؟","a":"١١٤ سورة","c":"القرآن الكريم"},{"q":"كم عدد أجزاء القرآن الكريم؟","a":"٣٠ جزءًا","c":"القرآن الكريم"},{"q":"كم عدد أحزاب القرآن الكريم؟","a":"٦٠ حزبًا","c":"القرآن الكريم"},{"q":"ما أطول سورة في القرآن الكريم؟","a":"سورة البقرة","c":"القرآن الكريم"},{"q":"ما أقصر سورة في القرآن الكريم؟","a":"سورة الكوثر","c":"القرآن الكريم"},{"q":"ما أعظم آية في القرآن الكريم؟","a":"آية الكرسي","c":"القرآن الكريم"},{"q":"ما أعظم سورة في القرآن الكريم؟","a":"سورة الفاتحة","c":"القرآن الكريم"},{"q":"ما السورة التي تعدل ثلث القرآن؟","a":"سورة الإخلاص","c":"القرآن الكريم"},{"q":"ما السورة التي تُسمى «سنام القرآن»؟","a":"سورة البقرة","c":"القرآن الكريم"},{"q":"ما السورة الوحيدة التي لا تبدأ بالبسملة؟","a":"سورة التوبة","c":"القرآن الكريم"},{"q":"ما السورة التي تتكرر فيها البسملة مرتين؟","a":"سورة النمل","c":"القرآن الكريم"},{"q":"ما السورة التي من أسمائها «الفاضحة»؟","a":"سورة التوبة","c":"القرآن الكريم"},{"q":"ما السورة التي تُسمى «أم الكتاب» و«السبع المثاني»؟","a":"سورة الفاتحة","c":"القرآن الكريم"},{"q":"كم عدد آيات سورة الفاتحة؟","a":"سبع آيات","c":"القرآن الكريم"},{"q":"ما السورة التي يُستحب قراءتها يوم الجمعة؟","a":"سورة الكهف","c":"القرآن الكريم"},{"q":"ما السورة التي تُسمى «المانعة» لأنها تمنع من عذاب القبر؟","a":"سورة الملك","c":"القرآن الكريم"},{"q":"من الصحابي الوحيد الذي ذُكر اسمه صريحًا في القرآن؟","a":"زيد بن حارثة","c":"القرآن الكريم"},{"q":"من المرأة الوحيدة التي ذُكر اسمها صريحًا في القرآن؟","a":"مريم ابنة عمران","c":"القرآن الكريم"},{"q":"كم مرة ذُكر اسم «محمد» ﷺ في القرآن الكريم؟","a":"أربع مرات","c":"القرآن الكريم"},{"q":"كم عدد الأنبياء الذين ذُكرت أسماؤهم في القرآن؟","a":"٢٥ نبيًا","c":"القرآن الكريم"},{"q":"من أكثر نبي ذُكر اسمه في القرآن الكريم؟","a":"موسى عليه السلام","c":"القرآن الكريم"},{"q":"كم عدد سجدات التلاوة في مصحف المدينة؟","a":"١٥ سجدة","c":"القرآن الكريم"},{"q":"ما السورة التي فيها سجدتا تلاوة؟","a":"سورة الحج","c":"القرآن الكريم"},{"q":"ما أطول آية في القرآن الكريم؟","a":"آية الدَّين في سورة البقرة","c":"القرآن الكريم"},{"q":"ما آخر سورة نزلت كاملة؟","a":"سورة النصر","c":"القرآن الكريم"},{"q":"ما السورة التي تنتهي كل آياتها بحرف الراء؟","a":"سورة الكوثر","c":"القرآن الكريم"},{"q":"ما السورتان اللتان سمّاهما النبي ﷺ «الزهراوين»؟","a":"البقرة وآل عمران","c":"القرآن الكريم"},{"q":"ما المعوّذتان؟","a":"سورتا الفلق والناس","c":"القرآن الكريم"},{"q":"ما السورة التي بدأت باسم ثمرتين؟","a":"سورة التين","c":"القرآن الكريم"},{"q":"ما السورة التي تحمل اسم معدن؟","a":"سورة الحديد","c":"القرآن الكريم"},{"q":"في أي سورة ضرب الله مثلًا بالذباب؟","a":"سورة الحج","c":"القرآن الكريم"},{"q":"ما السورة التي خُتمت باسم نبيين؟","a":"سورة الأعلى (إبراهيم وموسى)","c":"القرآن الكريم"},{"q":"ما السورة التي تُسمى أيضًا سورة «بني إسرائيل»؟","a":"سورة الإسراء","c":"القرآن الكريم"},{"q":"في أي سورة ذُكرت غزوة بدر باسمها؟","a":"سورة آل عمران","c":"القرآن الكريم"},{"q":"في أي سورة جاءت براءة أم المؤمنين عائشة في حادثة الإفك؟","a":"سورة النور","c":"القرآن الكريم"},{"q":"ما السورة التي جاءت فيها قصة نبي كاملة من أولها إلى آخرها؟","a":"سورة يوسف","c":"القرآن الكريم"},{"q":"من النبي الملقب بذي النون؟","a":"يونس عليه السلام","c":"القرآن الكريم"},{"q":"ما الذي ابتلع يونس عليه السلام؟","a":"الحوت","c":"القرآن الكريم"},{"q":"من النبي الذي كلّمه الله تكليمًا؟","a":"موسى عليه السلام","c":"القرآن الكريم"},{"q":"من النبي الذي ألان الله له الحديد؟","a":"داود عليه السلام","c":"القرآن الكريم"},{"q":"من النبي الذي سخّر الله له الريح والجن؟","a":"سليمان عليه السلام","c":"القرآن الكريم"},{"q":"ما الكتاب الذي أُنزل على داود عليه السلام؟","a":"الزبور","c":"القرآن الكريم"},{"q":"ما الكتاب الذي أُنزل على موسى عليه السلام؟","a":"التوراة","c":"القرآن الكريم"},{"q":"ما الكتاب الذي أُنزل على عيسى عليه السلام؟","a":"الإنجيل","c":"القرآن الكريم"},{"q":"من النبي الذي صنع السفينة بأمر الله؟","a":"نوح عليه السلام","c":"القرآن الكريم"},{"q":"كم لبث نوح عليه السلام في قومه يدعوهم؟","a":"ألف سنة إلا خمسين عامًا","c":"القرآن الكريم"},{"q":"من النبي الذي أُلقي في النار فجعلها الله بردًا وسلامًا؟","a":"إبراهيم عليه السلام","c":"القرآن الكريم"},{"q":"من الذي رفع قواعد الكعبة مع إبراهيم عليه السلام؟","a":"ابنه إسماعيل عليه السلام","c":"القرآن الكريم"},{"q":"من النبي الذي ألقاه إخوته في البئر؟","a":"يوسف عليه السلام","c":"القرآن الكريم"},{"q":"من النبي الذي أُرسل إلى ثمود وكانت آيته الناقة؟","a":"صالح عليه السلام","c":"القرآن الكريم"},{"q":"من النبي الذي أُرسل إلى قوم عاد؟","a":"هود عليه السلام","c":"القرآن الكريم"},{"q":"من النبي الذي أُرسل إلى أهل مدين؟","a":"شعيب عليه السلام","c":"القرآن الكريم"},{"q":"من النبي الذي ابتلاه الله في جسده فصبر حتى صار مضرب المثل؟","a":"أيوب عليه السلام","c":"القرآن الكريم"},{"q":"من النبي الذي دعا ربه وهو كبير فرُزق بيحيى؟","a":"زكريا عليه السلام","c":"القرآن الكريم"},{"q":"من الملك الصالح الذي بنى السد على يأجوج ومأجوج؟","a":"ذو القرنين","c":"القرآن الكريم"},{"q":"كم سنة لبث أصحاب الكهف في كهفهم؟","a":"٣٠٩ سنين","c":"القرآن الكريم"},{"q":"من العبد الصالح الذي صحبه موسى عليه السلام في سورة الكهف؟","a":"الخضر","c":"القرآن الكريم"},{"q":"اذكر الأنبياء الخمسة الذين سمّاهم الله قبل أن يولدوا.","a":"إسحاق ويعقوب ويحيى وعيسى ومحمد ﷺ","c":"القرآن الكريم"},{"q":"ما معنى «الزمهرير» في قوله تعالى: «لا يرون فيها شمسًا ولا زمهريرًا»؟","a":"البرد الشديد","c":"القرآن الكريم"},{"q":"ما السورة التي ذُكرت فيها قصة أبرهة وجيشه؟","a":"سورة الفيل","c":"القرآن الكريم"},{"q":"ما السورة التي يُطلق عليها «عروس القرآن» عند كثير من الناس، وتكررت فيها «فبأي آلاء ربكما تكذبان»؟","a":"سورة الرحمن","c":"القرآن الكريم"},{"q":"من أول الخلفاء الراشدين؟","a":"أبو بكر الصديق","c":"الصحابة والتاريخ"},{"q":"من الخليفة الراشد الثاني؟","a":"عمر بن الخطاب","c":"الصحابة والتاريخ"},{"q":"من الخليفة الراشد الثالث؟","a":"عثمان بن عفان","c":"الصحابة والتاريخ"},{"q":"من الخليفة الراشد الرابع؟","a":"علي بن أبي طالب","c":"الصحابة والتاريخ"},{"q":"من أول من لُقّب بأمير المؤمنين؟","a":"عمر بن الخطاب","c":"الصحابة والتاريخ"},{"q":"من الخليفة الذي بدأ العمل بالتاريخ الهجري؟","a":"عمر بن الخطاب","c":"الصحابة والتاريخ"},{"q":"من الصحابي الملقب بالفاروق؟","a":"عمر بن الخطاب","c":"الصحابة والتاريخ"},{"q":"لماذا لُقّب عثمان بن عفان بذي النورين؟","a":"لأنه تزوج ابنتي النبي ﷺ رقية ثم أم كلثوم","c":"الصحابة والتاريخ"},{"q":"من الصحابي الملقب بسيف الله المسلول؟","a":"خالد بن الوليد","c":"الصحابة والتاريخ"},{"q":"من الصحابي الملقب بأمين هذه الأمة؟","a":"أبو عبيدة بن الجراح","c":"الصحابة والتاريخ"},{"q":"من الصحابي الملقب بحواريّ رسول الله ﷺ؟","a":"الزبير بن العوام","c":"الصحابة والتاريخ"},{"q":"من أول من جمع القرآن الكريم في مصحف واحد؟","a":"أبو بكر الصديق","c":"الصحابة والتاريخ"},{"q":"من الخليفة الذي جمع الناس على مصحف واحد ونسخه إلى الأمصار؟","a":"عثمان بن عفان","c":"الصحابة والتاريخ"},{"q":"من الصحابي الذي كلّفه أبو بكر بجمع القرآن؟","a":"زيد بن ثابت","c":"الصحابة والتاريخ"},{"q":"من الصحابي الملقب بسيد القرّاء؟","a":"أُبي بن كعب","c":"الصحابة والتاريخ"},{"q":"من الصحابي الملقب بحَبر الأمة وترجمان القرآن؟","a":"عبدالله بن عباس","c":"الصحابة والتاريخ"},{"q":"من أكثر الصحابة روايةً لحديث النبي ﷺ؟","a":"أبو هريرة","c":"الصحابة والتاريخ"},{"q":"ما اسم الصحابي أبي ذر الغفاري؟","a":"جندب بن جنادة","c":"الصحابة والتاريخ"},{"q":"من الصحابي الذي اهتز لموته عرش الرحمن؟","a":"سعد بن معاذ","c":"الصحابة والتاريخ"},{"q":"من الصحابي الملقب بخطيب رسول الله ﷺ؟","a":"ثابت بن قيس","c":"الصحابة والتاريخ"},{"q":"من الصحابي الملقب بشاعر رسول الله ﷺ؟","a":"حسان بن ثابت","c":"الصحابة والتاريخ"},{"q":"من الصحابي الذي قال عنه النبي ﷺ: «ألا أستحي من رجل تستحي منه الملائكة»؟","a":"عثمان بن عفان","c":"الصحابة والتاريخ"},{"q":"من آخر العشرة المبشرين بالجنة وفاةً؟","a":"سعد بن أبي وقاص","c":"الصحابة والتاريخ"},{"q":"من أول من رمى بسهم في سبيل الله؟","a":"سعد بن أبي وقاص","c":"الصحابة والتاريخ"},{"q":"من الصحابية التي قاتلت دفاعًا عن النبي ﷺ يوم أحد؟","a":"نُسيبة بنت كعب (أم عمارة)","c":"الصحابة والتاريخ"},{"q":"من الصحابية الشاعرة التي استشهد أبناؤها الأربعة في القادسية؟","a":"الخنساء","c":"الصحابة والتاريخ"},{"q":"من قائد المسلمين في معركة القادسية؟","a":"سعد بن أبي وقاص","c":"الصحابة والتاريخ"},{"q":"من قائد المسلمين المشهور في معركة اليرموك؟","a":"خالد بن الوليد","c":"الصحابة والتاريخ"},{"q":"من القائد الذي فتح مصر؟","a":"عمرو بن العاص","c":"الصحابة والتاريخ"},{"q":"من القائد الذي فتح الأندلس؟","a":"طارق بن زياد","c":"الصحابة والتاريخ"},{"q":"من القائد الذي استعاد بيت المقدس بعد معركة حطين؟","a":"صلاح الدين الأيوبي","c":"الصحابة والتاريخ"},{"q":"من السلطان العثماني الذي فتح القسطنطينية؟","a":"محمد الفاتح","c":"الصحابة والتاريخ"},{"q":"في أي سنة ميلادية فُتحت القسطنطينية؟","a":"١٤٥٣م","c":"الصحابة والتاريخ"},{"q":"من الأمير الأموي الملقب بصقر قريش؟","a":"عبدالرحمن الداخل","c":"الصحابة والتاريخ"},{"q":"من مؤسس الدولة الأموية؟","a":"معاوية بن أبي سفيان","c":"الصحابة والتاريخ"},{"q":"ما عاصمة الدولة الأموية؟","a":"دمشق","c":"الصحابة والتاريخ"},{"q":"ما عاصمة الدولة العباسية؟","a":"بغداد","c":"الصحابة والتاريخ"},{"q":"من الخليفة الأموي الذي بنى قبة الصخرة؟","a":"عبدالملك بن مروان","c":"الصحابة والتاريخ"},{"q":"من الخليفة الملقب بخامس الخلفاء الراشدين؟","a":"عمر بن عبدالعزيز","c":"الصحابة والتاريخ"},{"q":"من قائد المسلمين في معركة عين جالوت ضد المغول؟","a":"سيف الدين قطز","c":"الصحابة والتاريخ"},{"q":"من مؤلف صحيح البخاري؟","a":"محمد بن إسماعيل البخاري","c":"الصحابة والتاريخ"},{"q":"من هم الأئمة الأربعة أصحاب المذاهب الفقهية؟","a":"أبو حنيفة ومالك والشافعي وأحمد بن حنبل","c":"الصحابة والتاريخ"},{"q":"من مؤلف كتاب «رياض الصالحين»؟","a":"الإمام النووي","c":"الصحابة والتاريخ"},{"q":"من العالم المسلم الذي يُعد مؤسس علم الاجتماع وصاحب «المقدمة»؟","a":"ابن خلدون","c":"الصحابة والتاريخ"},{"q":"من الرحالة المسلم المشهور صاحب «تحفة النظار»؟","a":"ابن بطوطة","c":"الصحابة والتاريخ"},{"q":"من البحّار العربي الملقب بأسد البحار؟","a":"أحمد بن ماجد","c":"الصحابة والتاريخ"},{"q":"من العالم المسلم الملقب بأبي الكيمياء؟","a":"جابر بن حيان","c":"الصحابة والتاريخ"},{"q":"من مؤلف كتاب «القانون في الطب»؟","a":"ابن سينا","c":"الصحابة والتاريخ"},{"q":"من العالم المسلم الذي يُنسب إليه تأسيس علم الجبر؟","a":"الخوارزمي","c":"الصحابة والتاريخ"},{"q":"من العالم المسلم الذي اكتشف الدورة الدموية الصغرى؟","a":"ابن النفيس","c":"الصحابة والتاريخ"},{"q":"من مؤسس المملكة العربية السعودية؟","a":"الملك عبدالعزيز آل سعود","c":"الصحابة والتاريخ"},{"q":"في أي سنة أُعلن توحيد المملكة باسم «المملكة العربية السعودية»؟","a":"١٣٥١هـ (١٩٣٢م)","c":"الصحابة والتاريخ"},{"q":"في أي يوم يوافق اليوم الوطني السعودي؟","a":"٢٣ سبتمبر","c":"الصحابة والتاريخ"},{"q":"في أي يوم يوافق يوم التأسيس السعودي؟","a":"٢٢ فبراير","c":"الصحابة والتاريخ"},{"q":"من مؤسس الدولة السعودية الأولى؟","a":"الإمام محمد بن سعود","c":"الصحابة والتاريخ"},{"q":"ما عاصمة الدولة السعودية الأولى؟","a":"الدرعية","c":"الصحابة والتاريخ"},{"q":"ما الاسم القديم للمدينة المنورة؟","a":"يثرب","c":"المدينة المنورة"},{"q":"من أسماء المدينة المنورة التي سماها بها النبي ﷺ؟","a":"طيبة وطابة","c":"المدينة المنورة"},{"q":"ما الجبل الذي قال عنه النبي ﷺ: «هذا جبل يحبنا ونحبه»؟","a":"جبل أُحد","c":"المدينة المنورة"},{"q":"ما اسم الجبل الصغير الذي وقف عليه الرماة يوم أحد؟","a":"جبل الرماة (جبل عَينين)","c":"المدينة المنورة"},{"q":"من سيد الشهداء المدفون عند جبل أحد؟","a":"حمزة بن عبدالمطلب","c":"المدينة المنورة"},{"q":"ما اسم المقبرة الرئيسية في المدينة المنورة؟","a":"البقيع (بقيع الغرقد)","c":"المدينة المنورة"},{"q":"أين تقع «الروضة الشريفة» التي قال عنها النبي ﷺ: «روضة من رياض الجنة»؟","a":"بين بيت النبي ﷺ ومنبره","c":"المدينة المنورة"},{"q":"بكم صلاة تعدل الصلاة في المسجد النبوي؟","a":"خير من ألف صلاة فيما سواه إلا المسجد الحرام","c":"المدينة المنورة"},{"q":"ما فضل الصلاة في مسجد قباء؟","a":"كأجر عمرة","c":"المدينة المنورة"},{"q":"في أي يوم من الأسبوع كان النبي ﷺ يأتي مسجد قباء؟","a":"كل يوم سبت","c":"المدينة المنورة"},{"q":"ما المسجد الذي تحولت فيه القبلة من بيت المقدس إلى الكعبة؟","a":"مسجد القبلتين","c":"المدينة المنورة"},{"q":"إلى أين كانت قبلة المسلمين قبل الكعبة؟","a":"بيت المقدس","c":"المدينة المنورة"},{"q":"كم شهرًا صلى المسلمون إلى بيت المقدس بعد الهجرة؟","a":"ستة عشر أو سبعة عشر شهرًا","c":"المدينة المنورة"},{"q":"من الصاحبان المدفونان بجوار النبي ﷺ في الحجرة؟","a":"أبو بكر الصديق وعمر بن الخطاب","c":"المدينة المنورة"},{"q":"ما ميقات أهل المدينة المنورة؟","a":"ذو الحُليفة (أبيار علي)","c":"المدينة المنورة"},{"q":"ما الوادي الذي قال عنه النبي ﷺ: «صلِّ في هذا الوادي المبارك»؟","a":"وادي العقيق","c":"المدينة المنورة"},{"q":"ما الغزوة التي حُفر فيها خندق شمال المدينة قرب جبل سلع؟","a":"غزوة الأحزاب (الخندق)","c":"المدينة المنورة"},{"q":"ما اسم المسجد الذي بُني في موقع غزوة الخندق ودعا فيه النبي ﷺ؟","a":"مسجد الفتح","c":"المدينة المنورة"},{"q":"ما البئر التي اشتراها عثمان بن عفان وجعلها للمسلمين؟","a":"بئر رُومة","c":"المدينة المنورة"},{"q":"ما القبيلتان العربيتان الكبيرتان في المدينة قبل الإسلام؟","a":"الأوس والخزرج","c":"المدينة المنورة"},{"q":"بماذا سُمّي أهل المدينة الذين نصروا النبي ﷺ؟","a":"الأنصار","c":"المدينة المنورة"},{"q":"ما اسم الحرب المشهورة بين الأوس والخزرج قبل الهجرة؟","a":"يوم بُعاث","c":"المدينة المنورة"},{"q":"بكم ضعفًا من بركة مكة دعا النبي ﷺ للمدينة؟","a":"ضعفَي ما بمكة من البركة","c":"المدينة المنورة"},{"q":"ما الشيئان اللذان أخبر النبي ﷺ أنهما لا يدخلان المدينة؟","a":"الطاعون والدجال","c":"المدينة المنورة"},{"q":"ما الجبلان اللذان حدّ بهما النبي ﷺ حرم المدينة؟","a":"عَير وثَور","c":"المدينة المنورة"},{"q":"من هم «أهل الصُّفّة»؟","a":"فقراء المسلمين الذين كانوا يسكنون مؤخرة المسجد النبوي","c":"المدينة المنورة"},{"q":"في أي حيّ من أحياء المدينة نزل النبي ﷺ أول ما وصل؟","a":"قباء (بني عمرو بن عوف)","c":"المدينة المنورة"},{"q":"ما اسم المدينة الساحلية القريبة من المدينة المنورة على البحر الأحمر؟","a":"ينبع","c":"المدينة المنورة"},{"q":"ما أكبر قارة في العالم؟","a":"آسيا","c":"جغرافيا"},{"q":"ما أصغر قارة في العالم؟","a":"أستراليا","c":"جغرافيا"},{"q":"كم عدد قارات العالم؟","a":"سبع قارات","c":"جغرافيا"},{"q":"ما أكبر محيط في العالم؟","a":"المحيط الهادئ","c":"جغرافيا"},{"q":"ما أطول نهر في العالم؟","a":"نهر النيل","c":"جغرافيا"},{"q":"ما أعلى قمة جبلية في العالم؟","a":"قمة إفرست","c":"جغرافيا"},{"q":"ما أكبر صحراء رملية متصلة في العالم؟","a":"الربع الخالي","c":"جغرافيا"},{"q":"ما أكبر صحراء حارة في العالم؟","a":"الصحراء الكبرى","c":"جغرافيا"},{"q":"ما أكبر شبه جزيرة في العالم؟","a":"شبه الجزيرة العربية","c":"جغرافيا"},{"q":"ما أكبر جزيرة في العالم؟","a":"جرينلاند","c":"جغرافيا"},{"q":"ما أكبر دولة في العالم مساحةً؟","a":"روسيا","c":"جغرافيا"},{"q":"ما أكبر دولة عربية مساحةً؟","a":"الجزائر","c":"جغرافيا"},{"q":"ما أكثر دولة في العالم سكانًا؟","a":"الهند","c":"جغرافيا"},{"q":"ما أصغر دولة في العالم؟","a":"الفاتيكان","c":"جغرافيا"},{"q":"ما الدولة الملقبة ببلاد الشمس المشرقة؟","a":"اليابان","c":"جغرافيا"},{"q":"ما الدولة العربية التي ليس لها حدود برية؟","a":"البحرين","c":"جغرافيا"},{"q":"ما الدولة العربية المكونة من جزر في المحيط الهندي؟","a":"جزر القمر","c":"جغرافيا"},{"q":"ما عاصمة اليابان؟","a":"طوكيو","c":"جغرافيا"},{"q":"ما عاصمة تركيا؟","a":"أنقرة","c":"جغرافيا"},{"q":"ما عاصمة كندا؟","a":"أوتاوا","c":"جغرافيا"},{"q":"ما عاصمة أستراليا؟","a":"كانبرا","c":"جغرافيا"},{"q":"ما عاصمة البرازيل؟","a":"برازيليا","c":"جغرافيا"},{"q":"ما عاصمة المغرب؟","a":"الرباط","c":"جغرافيا"},{"q":"ما عاصمة ماليزيا؟","a":"كوالالمبور","c":"جغرافيا"},{"q":"ما عاصمة باكستان؟","a":"إسلام آباد","c":"جغرافيا"},{"q":"ما عاصمة نيجيريا؟","a":"أبوجا","c":"جغرافيا"},{"q":"ما عاصمة سويسرا؟","a":"برن","c":"جغرافيا"},{"q":"ما عاصمة كوريا الجنوبية؟","a":"سيول","c":"جغرافيا"},{"q":"في أي دولة يقع برج بيزا المائل؟","a":"إيطاليا","c":"جغرافيا"},{"q":"في أي مدينة يقع برج إيفل؟","a":"باريس","c":"جغرافيا"},{"q":"ما أطول برج في العالم؟","a":"برج خليفة في دبي","c":"جغرافيا"},{"q":"ما المضيق الذي يفصل بين أوروبا وأفريقيا؟","a":"مضيق جبل طارق","c":"جغرافيا"},{"q":"ما المضيق الذي يربط البحر الأحمر بخليج عدن؟","a":"مضيق باب المندب","c":"جغرافيا"},{"q":"ما القناة التي تربط البحر الأحمر بالبحر المتوسط؟","a":"قناة السويس","c":"جغرافيا"},{"q":"ما عملة اليابان؟","a":"الين","c":"جغرافيا"},{"q":"كم عدد المناطق الإدارية في المملكة العربية السعودية؟","a":"١٣ منطقة","c":"جغرافيا"},{"q":"ما أعلى جبل في المملكة العربية السعودية؟","a":"جبل السودة","c":"جغرافيا"},{"q":"ما أكبر جزيرة سعودية في البحر الأحمر؟","a":"جزيرة فرسان","c":"جغرافيا"},{"q":"ما الكوكب الأقرب إلى الشمس؟","a":"عطارد","c":"علوم وطبيعة"},{"q":"ما أكبر كواكب المجموعة الشمسية؟","a":"المشتري","c":"علوم وطبيعة"},{"q":"ما الكوكب الذي يُسمى الكوكب الأحمر؟","a":"المريخ","c":"علوم وطبيعة"},{"q":"ما الكوكب المشهور بحلقاته الجميلة؟","a":"زحل","c":"علوم وطبيعة"},{"q":"كم عدد كواكب المجموعة الشمسية؟","a":"ثمانية كواكب","c":"علوم وطبيعة"},{"q":"ما أقرب نجم إلى الأرض؟","a":"الشمس","c":"علوم وطبيعة"},{"q":"كم يومًا تقريبًا تستغرق الأرض لتدور حول الشمس؟","a":"٣٦٥ يومًا وربع","c":"علوم وطبيعة"},{"q":"كم ساعة تستغرق الأرض لتدور حول نفسها؟","a":"٢٤ ساعة","c":"علوم وطبيعة"},{"q":"ما الغاز الأكثر وجودًا في الغلاف الجوي؟","a":"النيتروجين","c":"علوم وطبيعة"},{"q":"ما الغاز الذي تمتصه النباتات لتصنع غذاءها؟","a":"ثاني أكسيد الكربون","c":"علوم وطبيعة"},{"q":"ما اسم العملية التي تصنع بها النباتات غذاءها بضوء الشمس؟","a":"البناء الضوئي","c":"علوم وطبيعة"},{"q":"ما الرمز الكيميائي للذهب؟","a":"Au","c":"علوم وطبيعة"},{"q":"ما العنصر الذي رمزه الكيميائي Fe؟","a":"الحديد","c":"علوم وطبيعة"},{"q":"ما الصيغة الكيميائية للماء؟","a":"H₂O","c":"علوم وطبيعة"},{"q":"عند كم درجة مئوية يغلي الماء عند مستوى سطح البحر؟","a":"١٠٠ درجة مئوية","c":"علوم وطبيعة"},{"q":"ما أصلب مادة طبيعية معروفة؟","a":"الألماس","c":"علوم وطبيعة"},{"q":"ما سرعة الضوء تقريبًا؟","a":"٣٠٠ ألف كيلومتر في الثانية","c":"علوم وطبيعة"},{"q":"ما أكبر عضو في جسم الإنسان؟","a":"الجلد","c":"علوم وطبيعة"},{"q":"ما أكبر عضو داخلي في جسم الإنسان؟","a":"الكبد","c":"علوم وطبيعة"},{"q":"كم عدد عظام جسم الإنسان البالغ؟","a":"٢٠٦ عظمات","c":"علوم وطبيعة"},{"q":"ما أصغر عظمة في جسم الإنسان؟","a":"عظمة الرِّكاب في الأذن","c":"علوم وطبيعة"},{"q":"ما أطول عظمة في جسم الإنسان؟","a":"عظمة الفخذ","c":"علوم وطبيعة"},{"q":"كم عدد حجرات قلب الإنسان؟","a":"أربع حجرات","c":"علوم وطبيعة"},{"q":"كم عدد أسنان الإنسان البالغ؟","a":"٣٢ سنًّا","c":"علوم وطبيعة"},{"q":"ما الفيتامين الذي يصنعه الجسم عند التعرض لأشعة الشمس؟","a":"فيتامين د","c":"علوم وطبيعة"},{"q":"ما الحيوان الملقب بسفينة الصحراء؟","a":"الجمل","c":"علوم وطبيعة"},{"q":"ما أسرع حيوان بري؟","a":"الفهد","c":"علوم وطبيعة"},{"q":"ما أكبر حيوان على وجه الأرض؟","a":"الحوت الأزرق","c":"علوم وطبيعة"},{"q":"ما أطول حيوان في العالم؟","a":"الزرافة","c":"علوم وطبيعة"},{"q":"كم عدد أرجل العنكبوت؟","a":"ثمانية أرجل","c":"علوم وطبيعة"},{"q":"بماذا يتنفس السمك؟","a":"بالخياشيم","c":"علوم وطبيعة"},{"q":"كم عدد عيون النحلة؟","a":"خمس عيون","c":"علوم وطبيعة"},{"q":"ما الطائر الذي لا يطير ويعيش في القطب الجنوبي؟","a":"البطريق","c":"علوم وطبيعة"},{"q":"من العالم الذي اكتشف قانون الجاذبية؟","a":"إسحاق نيوتن","c":"علوم وطبيعة"},{"q":"من العالم الذي اكتشف البنسلين؟","a":"ألكسندر فليمنغ","c":"علوم وطبيعة"},{"q":"من المخترع المشهور باختراع المصباح الكهربائي؟","a":"توماس إديسون","c":"علوم وطبيعة"},{"q":"من مخترع الهاتف؟","a":"ألكسندر غراهام بيل","c":"علوم وطبيعة"},{"q":"ما وحدة قياس شدة التيار الكهربائي؟","a":"الأمبير","c":"علوم وطبيعة"},{"q":"ما المقياس المشهور لقياس قوة الزلازل؟","a":"مقياس ريختر","c":"علوم وطبيعة"},{"q":"ما الجهاز الذي يقيس الضغط الجوي؟","a":"البارومتر","c":"علوم وطبيعة"},{"q":"ما صوت الأسد؟","a":"الزئير","c":"علوم وطبيعة"},{"q":"ما صوت الحصان؟","a":"الصهيل","c":"علوم وطبيعة"},{"q":"ما صوت الذئب؟","a":"العُواء","c":"علوم وطبيعة"},{"q":"ما صوت الإبل؟","a":"الرُّغاء","c":"علوم وطبيعة"},{"q":"ما صوت البقر؟","a":"الخُوار","c":"علوم وطبيعة"},{"q":"ما صوت الحمام؟","a":"الهديل","c":"علوم وطبيعة"},{"q":"ما صوت الأفعى؟","a":"الفحيح","c":"علوم وطبيعة"},{"q":"ما اسم صغير الأسد؟","a":"الشِّبل","c":"علوم وطبيعة"},{"q":"ما اسم صغير الحصان؟","a":"المُهر","c":"علوم وطبيعة"},{"q":"ما اسم صغير الناقة؟","a":"الحُوار","c":"علوم وطبيعة"},{"q":"ما اسم صغير الكلب؟","a":"الجرو","c":"علوم وطبيعة"},{"q":"ما اسم بيت الأسد؟","a":"العرين","c":"علوم وطبيعة"},{"q":"كم عدد حروف الهجاء في اللغة العربية؟","a":"٢٨ حرفًا","c":"لغة وأدب"},{"q":"ما أقسام الكلمة في اللغة العربية؟","a":"اسم وفعل وحرف","c":"لغة وأدب"},{"q":"من الشاعر الملقب بأمير الشعراء؟","a":"أحمد شوقي","c":"لغة وأدب"},{"q":"من الشاعر الملقب بشاعر النيل؟","a":"حافظ إبراهيم","c":"لغة وأدب"},{"q":"من صاحب البيت: «الأم مدرسة إذا أعددتها، أعددت شعبًا طيب الأعراق»؟","a":"حافظ إبراهيم","c":"لغة وأدب"},{"q":"من صاحب البيت: «الخيل والليل والبيداء تعرفني»؟","a":"المتنبي","c":"لغة وأدب"},{"q":"من الشاعر الجاهلي الملقب بالملك الضِّلّيل؟","a":"امرؤ القيس","c":"لغة وأدب"},{"q":"من مؤلف المعجم المشهور «لسان العرب»؟","a":"ابن منظور","c":"لغة وأدب"},{"q":"من ترجم كتاب «كليلة ودمنة» إلى العربية؟","a":"ابن المقفع","c":"لغة وأدب"},{"q":"ما معنى كلمة «الوغى»؟","a":"الحرب","c":"لغة وأدب"},{"q":"ما معنى كلمة «اليَراع»؟","a":"القلم","c":"لغة وأدب"},{"q":"ما معنى كلمة «الدُّجى»؟","a":"ظلام الليل","c":"لغة وأدب"},{"q":"ما معنى كلمة «الثرى»؟","a":"التراب","c":"لغة وأدب"},{"q":"ما معنى كلمة «الضِّرغام»؟","a":"الأسد","c":"لغة وأدب"},{"q":"ما معنى كلمة «الغيث»؟","a":"المطر","c":"لغة وأدب"},{"q":"ما معنى كلمة «العَسجد»؟","a":"الذهب","c":"لغة وأدب"},{"q":"ما معنى كلمة «اللُّجين»؟","a":"الفضة","c":"لغة وأدب"},{"q":"ما معنى كلمة «المهنّد»؟","a":"السيف","c":"لغة وأدب"},{"q":"اذكر كلمة تُقرأ من اليمين ومن الشمال بالحروف نفسها.","a":"مثل: ثلث، سلس، كعك","c":"لغة وأدب"},{"q":"ما إعراب كلمة «الكتابُ» في جملة «الكتابُ مفيدٌ»؟","a":"مبتدأ مرفوع","c":"لغة وأدب"},{"q":"شيء كلما أخذت منه كبر، فما هو؟","a":"الحفرة","c":"ألغاز"},{"q":"شيء له أسنان ولا يعض، فما هو؟","a":"المشط","c":"ألغاز"},{"q":"شيء يمشي بلا رجلين ويبكي بلا عينين، فما هو؟","a":"السحاب","c":"ألغاز"},{"q":"شيء له عين ولا يرى، فما هو؟","a":"الإبرة","c":"ألغاز"},{"q":"شيء نقطّعه فنبكي عليه، فما هو؟","a":"البصل","c":"ألغاز"},{"q":"شيء يكتب ولا يقرأ، فما هو؟","a":"القلم","c":"ألغاز"},{"q":"شيء كلما زاد نقص، فما هو؟","a":"العمر","c":"ألغاز"},{"q":"شيء له رقبة وليس له رأس، فما هو؟","a":"الزجاجة","c":"ألغاز"},{"q":"شيء نأكله قبل أن يولد وبعد أن يموت، فما هو؟","a":"الدجاجة: بيضةً ثم لحمًا","c":"ألغاز"},{"q":"ماء لم ينزل من السماء ولم يخرج من الأرض، فما هو؟","a":"الدموع","c":"ألغاز"},{"q":"شيء له أوراق وليس نباتًا، وله جلد وليس حيوانًا، فما هو؟","a":"الكتاب","c":"ألغاز"},{"q":"شيء يتكلم بكل اللغات ولا يتعلمها، فما هو؟","a":"الصدى","c":"ألغاز"},{"q":"شيء له أربع أرجل ولا يمشي، فما هو؟","a":"الكرسي","c":"ألغاز"},{"q":"شيء يمشي ويقف وليس له أرجل، فما هو؟","a":"الساعة","c":"ألغاز"},{"q":"شيء يدخل الماء ولا يبتل، فما هو؟","a":"الظل","c":"ألغاز"},{"q":"أخت خالك وليست خالتك، فمن هي؟","a":"أمك","c":"ألغاز"},{"q":"ابن أمك وابن أبيك وليس أخاك، فمن هو؟","a":"أنت","c":"ألغاز"},{"q":"شيء يُكسر دون أن نلمسه، فما هو؟","a":"الوعد","c":"ألغاز"},{"q":"شيء فيه مدن بلا بيوت، وأنهار بلا ماء، فما هو؟","a":"الخريطة","c":"ألغاز"},{"q":"شيء تراه في «الليل» ثلاث مرات وفي «النهار» مرة واحدة، فما هو؟","a":"حرف اللام","c":"ألغاز"},{"q":"بيت ليس له أبواب ولا نوافذ، فما هو؟","a":"بيت الشِّعر","c":"ألغاز"},{"q":"شيء نضعه في الثلاجة ولا يبرد، فما هو؟","a":"الفلفل الحار","c":"ألغاز"},{"q":"شيء أخضر في الأرض، وأسود في السوق، وأحمر في البيت، فما هو؟","a":"الشاي","c":"ألغاز"},{"q":"شيء يقرصك ولا تراه، فما هو؟","a":"الجوع","c":"ألغاز"}];
+const CATS=[...new Set(BUILTIN.map(x=>x.c))];
+const qbank=()=>{const b=[...BUILTIN,...(S.bank||[]).map(x=>({...x,c:'أسئلتي'}))];const off=S.off||[];return off.length?b.filter(x=>!off.includes(x.c)):b};
+function shuf(n){const a=[...Array(n).keys()];for(let j=n-1;j>0;j--){const r=Math.floor(Math.random()*(j+1));[a[j],a[r]]=[a[r],a[j]]}return a}
+function ensureOrder(){const n=qbank().length;if(!Array.isArray(S.order)||S.order.length!==n){S.order=shuf(n);save()}}
+const SHOP=['cannon','grenade','spy','disable','anti','armor'];
+const KEY='barbarossa-board-v2', MKEY='barbarossa-muted';
+const DEF_SUB='أسوة · سفرة المدينة ٤٨ · المسابقة الثقافية';
+const NAMES=['أسرة بدر','أسرة أُحد','أسرة الخندق'];
+const LEADERS=['إلياس الدويش','عبدالعزيز خلبوص','موسى الحراسي'];
+const PALETTE=['#494d3c','#3f5a35','#8a6a45','#5f7d78','#9b3b2a','#6b5a7a','#a0773a','#4a5d73'];
+const FCOL=new Proxy([],{get:(t,k)=>typeof k==='string'&&/^\d+$/.test(k)?PALETTE[+k%PALETTE.length]:k==='length'?(S?S.fams.length:3):k==='map'?((fn)=>Array.from({length:S?S.fams.length:3},(_,i)=>fn(PALETTE[i%PALETTE.length],i))):undefined});
+function newFam(name,leader){return{name,leader:leader||'',soldiers:50,money:20000,inv:{cannon:0,grenade:0,spy:0,disable:0,anti:0,armor:0},double:1,shotsRound:0,shotsUsed:0,disabledThrough:0}}
+
+let S,H=[],FX=[],muted=false;
+function fresh(keep){
+  return {round:1,turn:0,q:0,qs:null,rev:false,phase:'q',atk:0,
+    cannonLimit:keep?keep.cannonLimit:1,reward:keep?keep.reward:10000,timerSec:keep?keep.timerSec:30,
+    wrongMode:keep?keep.wrongMode:'both',noAttackR1:keep?keep.noAttackR1!==false:true,attacksPerTurn:keep?keep.attacksPerTurn:1,
+    bank:keep?keep.bank:[],order:null,endShown:false,subtitle:keep?keep.subtitle:DEF_SUB,
+    fams:keep?keep.fams.map(f=>newFam(f.name,f.leader)):NAMES.map((n,i)=>newFam(n,LEADERS[i])),
+    log:[]};
+}
+function load(){
+  try{const s=localStorage.getItem(KEY);if(s){const o=JSON.parse(s);if(o&&o.fams&&o.fams.length>=2){S=Object.assign(fresh(),o);}}}catch(e){}
+  if(!S)S=fresh();
+  S.fams.forEach((f,i)=>{if(/^الأسرة (الأولى|الثانية|الثالثة)$/.test(f.name))f.name=NAMES[i]||f.name;if(f.leader===undefined)f.leader=f.name===NAMES[i]?LEADERS[i]:''});
+  if(S.turn>=S.fams.length)S.turn=0;
+  if(S.subtitle===undefined||S.subtitle==='سفرة المدينة ٤٨ · المسابقة الثقافية')S.subtitle=DEF_SUB;
+  try{muted=localStorage.getItem(MKEY)==='1'}catch(e){}
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function act(fn){H.push(JSON.stringify(S));if(H.length>120)H.shift();fn();save();render();checkEnd()}
+
+const $=s=>document.querySelector(s);
+const ar=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+const money=n=>{if(n===0)return'٠';if(n%1000)return ar(n);const k=n/1000;return ar(k)+(k>=3&&k<=10?' آلاف':' ألف')};
+const sgn=(s,n)=>`<bdi dir="ltr">${s}${ar(n)}</bdi>`;
+const sgnMoney=n=>{const m=money(n),sp=m.indexOf(' ');return sp<0?sgn('+',n):`<bdi dir="ltr">+${m.slice(0,sp)}</bdi>${m.slice(sp)}`};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shotsLeft=f=>f.inv.cannon-(f.shotsRound===S.round?f.shotsUsed:0);
+const isDis=f=>f.disabledThrough>=S.round;
+const alive=i=>S.fams[i].soldiers>0;
+function kill(f,n){const k=Math.min(n,f.soldiers);f.soldiers-=k;return k}
+function log(t,k){S.log.unshift({r:S.round,t,k:k||''});if(S.log.length>300)S.log.length=300}
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove('show'),1900)}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ===== sound (synthesized, no files) ===== */
+const sfx=(()=>{
+  let ctx=null;
+  function C(){if(muted)return null;try{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume().catch(()=>{});return ctx}catch(e){return null}}
+  function env(g,t,a,peak,dec){g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+a+dec)}
+  function tone(c,type,f,t,dur,vol,f2){const o=c.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);const g=c.createGain();env(g,t,.008,vol,dur);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+dur+.05)}
+  function noise(c,dur){const b=c.createBuffer(1,Math.floor(c.sampleRate*dur),c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const s=c.createBufferSource();s.buffer=b;return s}
+  const safe=fn=>(...a)=>{try{const c=C();if(c)fn(c,c.currentTime,...a)}catch(e){}};
+  return{
+    unlock:safe(()=>{}),
+    boom:safe((c,t,big)=>{const n=noise(c,1.4),f=c.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(big?1800:1200,t);f.frequency.exponentialRampToValueAtTime(70,t+1.1);const g=c.createGain();env(g,t,.005,big?1:.75,big?1.3:.9);n.connect(f);f.connect(g);g.connect(c.destination);n.start(t);n.stop(t+1.4);tone(c,'sine',130,t,.6,.9,32)}),
+    whoosh:safe((c,t,d)=>{const n=noise(c,d||.9),f=c.createBiquadFilter();f.type='bandpass';f.Q.value=2.5;f.frequency.setValueAtTime(300,t);f.frequency.exponentialRampToValueAtTime(2200,t+(d||.9));const g=c.createGain();env(g,t,.25,.22,(d||.9)-.2);n.connect(f);f.connect(g);g.connect(c.destination);n.start(t);n.stop(t+(d||.9))}),
+    fire:safe((c,t)=>{tone(c,'square',90,t,.12,.25,50);const n=noise(c,.25),g=c.createGain();env(g,t,.003,.35,.22);n.connect(g);g.connect(c.destination);n.start(t);n.stop(t+.25)}),
+    coin:safe((c,t)=>{tone(c,'triangle',988,t,.1,.3);tone(c,'triangle',1319,t+.08,.35,.3);tone(c,'sine',1976,t+.08,.2,.08)}),
+    cash:safe((c,t)=>{tone(c,'triangle',660,t,.08,.2);tone(c,'triangle',880,t+.06,.08,.2);tone(c,'triangle',1320,t+.12,.25,.22)}),
+    clang:safe((c,t)=>{tone(c,'triangle',1400,t,.7,.28);tone(c,'sine',2150,t,.5,.16);tone(c,'square',620,t,.06,.1)}),
+    buzz:safe((c,t)=>{tone(c,'sawtooth',150,t,.55,.22);tone(c,'sawtooth',145,t,.55,.18)}),
+    tick:safe((c,t)=>{tone(c,'square',1900,t,.03,.08)}),
+    sneak:safe((c,t)=>{[392,466,523,622].forEach((f,i)=>tone(c,'triangle',f,t+i*.12,.12,.15))}),
+    drum:safe((c,t)=>{[0,.14,.28,.5].forEach((d,i)=>tone(c,'sine',i===3?110:150,t+d,.25,.7,50))}),
+    fanfare:safe((c,t)=>{[[523,0],[659,.15],[784,.3],[1047,.45],[784,.75],[1047,.9]].forEach(([f,d],i)=>{tone(c,'triangle',f,t+d,i>3?.6:.18,.28);tone(c,'square',f/2,t+d,i>3?.6:.18,.05)})}),
+    sad:safe((c,t)=>{[392,370,349,330].forEach((f,i)=>tone(c,'triangle',f,t+i*.22,.3,.18))})
+  };
+})();
+
+/* ===== render ===== */
+function chips(f){
+  const out=[];
+  if(f.inv.cannon>0){const l=shotsLeft(f);out.push(`<span class="chip">${ICON.cannon}مدفع <b>×${ar(f.inv.cannon)}</b> <em class="${l>0?'':'wait'}">${l>0?'جاهز':'الجولة الجاية'}</em></span>`)}
+  ['grenade','spy','disable','anti'].forEach(k=>{if(f.inv[k]>0)out.push(`<span class="chip">${ICON[k]}${W[k].n} <b>×${ar(f.inv[k])}</b></span>`)});
+  if(f.inv.armor)out.push(`<span class="chip armor">${ICON.armor}جنود مدرّعون</span>`);
+  out.push(`<span class="chip dbl ${f.double?'':'used'}">${ICON.double}كرت المضاعفة</span>`);
+  return out.join('');
+}
+function card(f,i,lead){
+  const dis=isDis(f), sunk=f.soldiers===0, turn=S.turn===i;
+  const total=Math.max(50,f.soldiers);
+  let troops='';for(let j=0;j<total;j++)troops+=`<svg class="${j<f.soldiers?(j>=50?'extra':''):'off'}" viewBox="0 0 10 14"><use href="#sol"/></svg>`;
+  const ratio=Math.min(1,f.soldiers/50), tilt=sunk?0:Math.round((1-ratio)*10);
+  const smoke=!sunk&&ratio<.6?'<i class="smoke"></i><i class="smoke"></i><i class="smoke"></i>':'';
+  const flame=!sunk&&ratio<.3?'<i class="flame"></i>':'';
+  return `<article class="fam ${turn?'is-turn':'not-turn'} ${dis?'is-dis':''} ${sunk?'is-sunk':''}" data-card="${i}" style="--fc:${FCOL[i]}">
+    <div class="fam-top">
+      <input class="fam-name" value="${esc(f.name)}" data-i="${i}" aria-label="اسم الأسرة" maxlength="28">
+      ${turn&&!sunk?'<span class="tag turn">دورهم</span>':''}
+      ${lead?`<span class="tag crown">${ICON.crown}المتصدّر</span>`:''}
+      <button class="ibtn" data-act="edit" data-i="${i}" title="تعديل يدوي">${ICON.edit}</button>
+    </div>
+    ${f.leader?`<div class="leader">القائد: ${esc(f.leader)}</div>`:''}
+    ${dis?`<button class="badge-dis" data-act="undis" data-i="${i}" title="اضغط لإلغاء التعطيل">أسطول معطّل حتى نهاية الجولة ${ar(f.disabledThrough)} ✕</button>`:''}
+    <div class="mid">
+      <div class="soldiers"><span class="num">${ar(f.soldiers)}</span><span class="lbl">جندي</span></div>
+      <div class="harbor" data-ship="${i}"><i class="sun"></i>
+        <div class="ship-wrap ${sunk?'sunk':''}" style="--tilt:${tilt}deg">${shipSVG()}${smoke}${flame}</div>
+        ${WAVES}${sunk?'<div class="sunk-lbl">غرق الأسطول</div>':''}
+      </div>
+    </div>
+    <div class="troops">${troops}</div>
+    <div class="money"><span>${ICON.coin}الخزينة</span><b>${money(f.money)}</b></div>
+    <div class="inv">${chips(f)}</div>
+  </article>`;
+}
+function renderQ(){
+  const f=S.fams[S.turn];
+  ensureOrder();$('#qNum').innerHTML=ar(S.q+1)+(qbank().length?`<small style="font-size:14px;opacity:.7"> من ${ar(qbank().length)}</small>`:'');
+  $('#qTurn').textContent=f.name;
+  $('#qpanel').style.setProperty('--turnc',FCOL[S.turn]);
+  ensureOrder();const bank=qbank(), item=bank[S.order[S.q]];
+  const t=$('#qText'), a=$('#qAns'), st=$('#qState'), q=S.phase==='q';
+  a.textContent=item&&item.a?('الجواب: '+item.a):'';
+  if(q){
+    if(!bank.length){t.className='q-msg';t.innerHTML=`اقرأ السؤال على ${esc(f.name)}<small>أو أضف أسئلتك من «بنك الأسئلة» عشان تظهر هنا</small>`;}
+    else if(!item){t.className='q-text muted';t.textContent='خلصت الأسئلة — أضف أكثر من «بنك الأسئلة»';}
+    else{t.className='q-text';t.textContent=item.q;}
+    st.innerHTML='';
+  }else if(S.qs==='right'){
+    t.className='q-msg';
+    t.innerHTML=`جواب صح! ${esc(f.name)} ربحت ${money(S.reward)}<small>${prepRound()?'جولة التجهيز: اشتروا أسلحتكم ودروعكم — الهجوم يبدأ من الجولة الثانية':canAttack()?'اشتروا اللي تبون، وبعدها هاجموا — والدور ينتقل تلقائيًا بعد الهجوم':'اشتروا اللي تبون، وبعدها اضغطوا «إنهاء الدور»'}</small>`;
+    st.innerHTML='';
+  }else{
+    t.className='q-msg';
+    t.innerHTML=`جواب خطأ — ما فيه فلوس هالمرة<small>${prepRound()&&S.wrongMode!=='skip'?'جولة التجهيز: تقدرون تشترون من رصيدكم — الهجوم يبدأ من الجولة الثانية':S.wrongMode==='both'?'تقدرون تشترون من رصيدكم وتهاجمون — والدور ينتقل تلقائيًا بعد الهجوم':S.wrongMode==='buy'?'تقدرون تشترون من رصيدكم فقط، وبعدها اضغطوا «إنهاء الدور»':'الدور ينتقل للأسرة اللي بعدكم'}</small>`;
+    st.innerHTML='';
+  }
+  a.classList.toggle('show',!!((S.rev||!q)&&a.textContent));
+  const qc=$('#qCat');qc.innerHTML=item&&item.c?`<span>${esc(item.c)}</span>`:'';qc.classList.toggle('show',!!(q&&item&&item.c));
+  const show=(id,v)=>{$(id).hidden=!v};
+  show('#qTimer',q);show('#qReveal',q&&!!(item&&item.a));show('#qRight',q);show('#qWrong',q);
+  show('#qShop',!q&&canBuy());show('#qAttack',!q&&(S.qs==='right'||S.wrongMode==='both'));show('#qEnd',!q);
+  $('#qReveal').textContent=S.rev?'إخفاء الجواب':'إظهار الجواب';
+  const dis=isDis(f);
+  $('#qAttack').disabled=!canAttack();
+  $('#qAttack').textContent=prepRound()?'هجوم (من الجولة ٢)':dis?'هجوم (أسطولكم معطّل)':S.atk>=S.attacksPerTurn?'هجوم (استُخدم)':'هجوم';
+  const steps=[['سؤال',q?'on':'done'],['شراء',q?'':(canBuy()?'on':'')],['هجوم',q?'':(S.atk>=S.attacksPerTurn?'done':canAttack()?'on':'')],['الأسرة التالية','']];
+  $('#qStep').innerHTML=steps.map(([n,c])=>`<span class="${c}">${n}</span>`).join('');
+}
+const canBuy=()=>S.phase==='act'&&(S.qs==='right'||S.wrongMode!=='skip');
+function gridCols(){const n=S.fams.length,w=innerWidth;if(w<640)return 1;if(w<1100)return Math.min(n,3);return n<=4?n:Math.ceil(n/2)}
+let _cols=null;addEventListener('resize',()=>{const c=gridCols();if(c!==_cols){_cols=c;$('#grid').style.setProperty('--cols',c)}fitBattle()});
+function fitBattle(){document.querySelectorAll('.battle').forEach(b=>{b.style.zoom=Math.min(1,(innerWidth-28)/760)})}
+const prepRound=()=>S.noAttackR1&&S.round===1;
+const canAttack=()=>{const f=S.fams[S.turn];return S.phase==='act'&&!prepRound()&&(S.qs==='right'||S.wrongMode==='both')&&S.atk<S.attacksPerTurn&&!isDis(f)&&f.soldiers>0};
+function render(){
+  $('#round').textContent=ar(S.round);
+  const st=$('#subt');if(document.activeElement!==st)st.value=S.subtitle||'';
+  const mx=Math.max(...S.fams.map(f=>f.soldiers)), allEq=S.fams.every(f=>f.soldiers===mx);
+  const g=$('#grid'),n=S.fams.length;g.style.setProperty('--cols',gridCols());g.classList.toggle('many',n>3);
+  $('#grid').innerHTML=S.fams.map((f,i)=>card(f,i,!allEq&&f.soldiers===mx)).join('');
+  $('#log').innerHTML=S.log.length?S.log.map(e=>`<li class="${e.k}"><span class="r">ج${ar(e.r)}</span><span>${esc(e.t)}</span></li>`).join(''):'<li class="empty">ما صار شي للحين — أول جواب صح يبدأ المعركة.</li>';
+  $('#undo').disabled=!H.length;
+  $('#mute').innerHTML=muted?ICON.soundOff:ICON.soundOn;
+  renderQ();runFx();
+}
+function cardEl(i){return document.querySelector(`[data-card="${i}"]`)}
+function runFx(){
+  FX.forEach(fx=>{
+    const c=cardEl(fx.i);if(!c)return;
+    if(fx.k==='hit'){c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake')}
+    if(fx.k==='gain'){c.classList.remove('bump');void c.offsetWidth;c.classList.add('bump')}
+    const el=document.createElement('div');el.className='fx fx-'+fx.k;el.innerHTML=fx.h||esc(fx.t);c.appendChild(el);
+    setTimeout(()=>el.remove(),1900);
+  });FX=[];
+}
+
+/* ===== animations ===== */
+function center(i){const el=document.querySelector(`[data-ship="${i}"]`)||cardEl(i);const r=el.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2}}
+function fly(from,to,kind,dur){
+  return new Promise(res=>{
+    const a=center(from),b=center(to);
+    const el=document.createElement('div');el.className='proj '+kind;
+    el.innerHTML=kind==='ball'?ICON.ball:kind==='fire'?ICON.fire:kind==='spy'?ICON.spy:kind==='men'?ICON.men:kind==='chain'?ICON.disable:kind==='grenade'?ICON.grenade:ICON.ball;
+    document.body.appendChild(el);
+    const peak=Math.min(a.y,b.y)-Math.max(140,Math.abs(a.x-b.x)*.35), spin=(kind==='spy'||kind==='men')?0:540, frames=[];
+    for(let s=0;s<=30;s++){const t=s/30,x=a.x+(b.x-a.x)*t,y=(1-t)*(1-t)*a.y+2*(1-t)*t*peak+t*t*b.y;
+      frames.push({transform:`translate(${x}px,${y}px) translate(-50%,-50%) rotate(${t*spin}deg) scale(${1+.45*Math.sin(Math.PI*t)})`})}
+    const d=dur||950;
+    let done=false;const fin=()=>{if(done)return;done=true;el.remove();res(b)};
+    try{const an=el.animate(frames,{duration:d,easing:'cubic-bezier(.3,.1,.6,1)'});an.onfinish=fin}catch(e){fin()}
+    setTimeout(fin,d+200);
+  });
+}
+function boom(p,big){
+  const el=document.createElement('div');el.className='boom'+(big?' big':'');el.style.transform=`translate(${p.x}px,${p.y}px)`;
+  let h='<div class="core"></div><div class="ring"></div>';
+  const n=big?20:13;for(let k=0;k<n;k++){const ang=Math.PI*2*k/n+Math.random()*.4,dist=(big?150:95)*(.6+Math.random()*.6);
+    h+=`<i class="spark" style="--dx:${Math.cos(ang)*dist}px;--dy:${Math.sin(ang)*dist}px;background:${['#ffb547','#e2622d','#ffe08a','#9b3b2a'][k%4]}"></i>`}
+  el.innerHTML=h;document.body.appendChild(el);setTimeout(()=>el.remove(),1000);
+  const inn=$('#inner');inn.classList.remove('quake');void inn.offsetWidth;inn.classList.add('quake');
+}
+function shieldPop(p){const el=document.createElement('div');el.className='shieldpop';el.style.left=p.x+'px';el.style.top=p.y+'px';el.innerHTML=ICON.anti;document.body.appendChild(el);setTimeout(()=>el.remove(),1100)}
+async function busy(fn){document.body.classList.add('busy');try{await fn()}finally{document.body.classList.remove('busy')}}
+function banner(small,big,ms){
+  $('#bannerSmall').textContent=small;$('#bannerBig').textContent=big;
+  const b=$('#banner'),inn=b.querySelector('.in');b.classList.add('show');inn.style.animation='none';void inn.offsetWidth;inn.style.animation='';
+  clearTimeout(banner._t);banner._t=setTimeout(()=>b.classList.remove('show'),ms||1650);
+}
+
+/* ===== modal ===== */
+function modal(title,sub,body,buttons){
+  $('#mTitle').textContent=title;$('#mSub').innerHTML=sub||'';$('#mBody').innerHTML=body||'';
+  const foot=$('#mFoot');foot.innerHTML='';
+  (buttons||[]).forEach(b=>{const el=document.createElement('button');el.className='btn '+(b.cls||'b-ghost');el.innerHTML=b.t;
+    el.onclick=()=>{sfx.unlock();const keep=b.fn&&b.fn()===false;if(!keep)closeModal()};foot.appendChild(el)});
+  $('#scrim').classList.add('open');
+}
+function closeModal(){$('#scrim').classList.remove('open')}
+$('#mClose').onclick=closeModal;
+$('#scrim').addEventListener('click',e=>{if(e.target.id==='scrim')closeModal()});
+
+/* ===== questions & turns ===== */
+let timer={left:0,id:null};
+function timerShow(){
+  const tot=S.timerSec, left=timer.id?timer.left:tot, el=$('#qTimer');
+  $('#qTimerVal').textContent=ar(left);el.style.setProperty('--p',left/tot);
+  el.classList.toggle('urgent',!!timer.id&&left<=5);
+}
+function timerStop(){clearInterval(timer.id);timer.id=null;timerShow()}
+function timerStart(){
+  timerStop();timer.left=S.timerSec;timer.id=setInterval(()=>{
+    timer.left--;if(timer.left<=5&&timer.left>0)sfx.tick();
+    if(timer.left<=0){clearInterval(timer.id);timer.id=null;timer.left=0;sfx.buzz();const p=$('#qpanel');p.classList.remove('timeup');void p.offsetWidth;p.classList.add('timeup');toast('انتهى الوقت!');timerShow();return}
+    timerShow();
+  },1000);timerShow();
+}
+$('#qTimer').onclick=()=>{sfx.unlock();timer.id?timerStop():timerStart()};
+$('#qReveal').onclick=()=>{S.rev=!S.rev;save();renderQ()};
+/* auto-advance to the next family */
+let auto=null;
+function cancelAuto(){if(auto){clearTimeout(auto);auto=null}$('#autobar').classList.remove('on')}
+function autoEnd(ms){
+  cancelAuto();const bar=$('#autobar');bar.style.setProperty('--d',ms+'ms');
+  const i=bar.querySelector('i');i.style.animation='none';void i.offsetWidth;i.style.animation='';bar.classList.add('on');
+  auto=setTimeout(()=>{auto=null;bar.classList.remove('on');endTurn()},ms);
+}
+function endTurn(){
+  cancelAuto();timerStop();
+  if(S.fams.filter((_,i)=>alive(i)).length<=1)return;
+  let newRound=false;const prev=S.fams[S.turn].name;
+  act(()=>{
+    let t=S.turn,g=0;
+    const n=S.fams.length;do{t=(t+1)%n;if(t===0)newRound=true;g++}while(!alive(t)&&g<n);
+    S.turn=t;S.q++;S.qs=null;S.rev=false;S.phase='q';S.atk=0;
+    if(newRound){S.round++;log(`بدأت الجولة ${ar(S.round)} — المدافع جاهزة`,'rnd')}
+  });
+  if(newRound){sfx.drum();if(S.noAttackR1&&S.round===2)banner('الجولة ٢','بدأ الهجوم!',2000);else banner('الجولة',ar(S.round))}
+  else banner('الدور على',S.fams[S.turn].name,1300);
+}
+function afterAttack(){
+  render();
+  if(S.atk>=S.attacksPerTurn&&S.phase==='act')autoEnd(2600);
+}
+$('#qRight').onclick=()=>{sfx.unlock();timerStop();const i=S.turn,f=S.fams[i];sfx.coin();
+  act(()=>{S.qs='right';S.phase='act';S.atk=0;f.money+=S.reward;log(`${f.name} جاوبت صح: +${money(S.reward)}`,'gain');FX.push({i,h:sgnMoney(S.reward),k:'gain'})})};
+$('#qWrong').onclick=()=>{sfx.unlock();timerStop();const f=S.fams[S.turn];sfx.buzz();
+  act(()=>{S.qs='wrong';S.phase='act';S.atk=0;log(`${f.name} جاوبت خطأ`,'')});
+  if(!canBuy())autoEnd(3200);
+};
+$('#qShop').onclick=()=>{sfx.unlock();cancelAuto();shop(S.turn)};
+$('#qAttack').onclick=()=>{sfx.unlock();cancelAuto();attack(S.turn)};
+$('#qEnd').onclick=()=>{sfx.unlock();endTurn()};
+
+/* ===== shop ===== */
+function shop(i){
+  const f=S.fams[i];
+  const rows=SHOP.map(k=>{
+    let why='';
+    if(k==='armor'&&f.inv.armor)why='عندكم';
+    else if(k==='cannon'&&S.cannonLimit>0&&f.inv.cannon>=S.cannonLimit)why='وصلتم الحد';
+    else if(f.money<W[k].p)why='الرصيد ما يكفي';
+    return `<button class="opt" data-buy="${k}" ${why?'disabled':''}>
+      <span class="ic">${ICON[k]}</span>
+      <span><span class="t">${W[k].n}</span><br><span class="d">${W[k].d}</span></span>
+      <span class="p">${money(W[k].p)}${why?`<span class="no">${why}</span>`:''}</span></button>`;
+  }).join('');
+  modal('سوق السلاح',`${esc(f.name)} · الرصيد: <b>${money(f.money)}</b>`,`<div class="list">${rows}</div>`,[{t:'تم',cls:'b-olive'}]);
+  $('#mBody').querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.buy;sfx.cash();
+    act(()=>{f.money-=W[k].p;f.inv[k]++;log(`${f.name} اشترت ${W[k].n} بـ${money(W[k].p)}`,'');FX.push({i,t:W[k].n,k:'buy'})});
+    shop(i);
+  });
+}
+
+/* ===== attack ===== */
+function attack(i){
+  const f=S.fams[i], opts=[];
+  if(f.inv.cannon>0)opts.push(['cannon',shotsLeft(f)>0?'':'استُخدم هذي الجولة',`×${ar(Math.max(0,shotsLeft(f)))} جاهز`]);
+  ['grenade','spy','disable'].forEach(k=>{if(f.inv[k]>0)opts.push([k,'',`×${ar(f.inv[k])}`])});
+  if(f.double)opts.push(['double','','مرة واحدة']);
+  const warn=S.turn!==i?`<p class="hint" style="margin:0 0 8px">تنبيه: الدور الحين على <b>${esc(S.fams[S.turn].name)}</b>.</p>`:'';
+  if(!opts.length){
+    modal('ما عندكم سلاح هجوم',esc(f.name),'<p>اشتروا مدفع أو قنبلة أو جاسوس أو تعطيل أسطول من السوق أول.</p>',[{t:'افتح السوق',cls:'b-olive',fn:()=>{setTimeout(()=>shop(i))}},{t:'إلغاء'}]);return;
+  }
+  const rows=opts.map(([k,why,cnt])=>`<button class="opt atk" data-w="${k}" ${why?'disabled':''}>
+      <span class="ic">${ICON[k]}</span>
+      <span><span class="t">${W[k].n}</span><br><span class="d">${W[k].d}</span></span>
+      <span class="p">${cnt}${why?`<span class="no">${why}</span>`:''}</span></button>`).join('');
+  modal('هجوم — اختر السلاح',esc(f.name),warn+`<div class="list">${rows}</div>`,[{t:'إلغاء'}]);
+  $('#mBody').querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>pickTarget(i,b.dataset.w));
+}
+function pickTarget(i,k){
+  const f=S.fams[i];
+  const rows=S.fams.map((d,t)=>{
+    if(t===i)return'';
+    const meta=[];
+    if(d.inv.anti)meta.push(`<span class="chip">${ICON.anti}مضاد ×${ar(d.inv.anti)}</span>`);
+    if(d.inv.armor)meta.push(`<span class="chip armor">${ICON.armor}مدرّعون</span>`);
+    if(isDis(d))meta.push(`<span class="chip">معطّل</span>`);
+    return `<button class="opt target" data-t="${t}" ${d.soldiers===0?'disabled':''}>
+      <span><span class="t">${esc(d.name)}</span><span class="meta">${meta.join('')}</span></span>
+      <span class="big">${ar(d.soldiers)}</span></button>`;
+  }).join('');
+  modal(`${W[k].n} — على مين؟`,esc(f.name)+' تهاجم',`<div class="list">${rows}</div>`,[{t:'رجوع',fn:()=>{setTimeout(()=>attack(i))}},{t:'إلغاء'}]);
+  $('#mBody').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{sfx.unlock();closeModal();resolve(i,+b.dataset.t,k)});
+}
+function useCannon(a){if(a.shotsRound!==S.round){a.shotsRound=S.round;a.shotsUsed=0}a.shotsUsed++}
+async function strike(i,t,kind,big,apply){
+  await busy(async()=>{
+    sfx.fire();sfx.whoosh(.95);
+    const p=await fly(i,t,kind,big?1150:950);
+    boom(p,big);sfx.boom(big);
+    act(()=>{apply();S.atk++});
+  });
+  afterAttack();
+}
+async function blocked(i,t,kind,apply){
+  await busy(async()=>{
+    sfx.fire();sfx.whoosh(.95);
+    const p=await fly(i,t,kind,950);
+    shieldPop(p);sfx.clang();
+    act(()=>{apply();S.atk++});
+  });
+  afterAttack();
+}
+function resolve(i,t,k){
+  const a=S.fams[i], d=S.fams[t];
+  if(k==='double'){
+    modal('كرت المضاعفة','',`<p>هل فازت <b>${esc(a.name)}</b> على <b>${esc(d.name)}</b> في سؤال «أسرع جواب»؟</p>`,[
+      {t:'فازت — نفّذ الضربة',cls:'b-brick',fn:()=>{strike(i,t,'fire',true,()=>{a.double=0;const n=kill(d,16);log(`${a.name} استخدمت كرت المضاعفة: قتلت ${ar(n)} من ${d.name} (ضربة لا تُصد)`,'hit');FX.push({i:t,h:sgn('−',n),k:'hit'})})}},
+      {t:'خسرت — يضيع الكرت',cls:'b-olive',fn:()=>{sfx.sad();act(()=>{a.double=0;S.atk++;log(`${a.name} خسرت أسرع جواب وضاع كرت المضاعفة`,'block');FX.push({i,t:'ضاع الكرت',k:'info'})});afterAttack()}},
+      {t:'إلغاء'}]);
+    return;
+  }
+  if(k==='spy'){
+    busy(async()=>{
+      sfx.sneak();await fly(i,t,'spy',1000);
+      let n=0;act(()=>{a.inv.spy--;S.atk++;n=kill(d,10);log(`جاسوس ${a.name} أقنع ${ar(n)} جنود من ${d.name} بالانضمام لجيشها`,'hit');FX.push({i:t,h:sgn('−',n),k:'hit'})});
+      await wait(250);sfx.whoosh(.8);await fly(t,i,'men',900);
+      act(()=>{a.soldiers+=n;FX.push({i,h:sgn('+',n),k:'gain'})});H.pop();sfx.coin();
+    }).then(afterAttack);
+    return;
+  }
+  if(k==='disable'){
+    busy(async()=>{
+      sfx.whoosh(.9);const p=await fly(i,t,'chain',900);sfx.clang();
+      act(()=>{a.inv.disable--;S.atk++;d.disabledThrough=Math.max(d.disabledThrough,S.round+1);log(`${a.name} عطّلت أسطول ${d.name} حتى نهاية الجولة ${ar(S.round+1)}`,'hit');FX.push({i:t,t:'معطّل',k:'info'})});
+    }).then(afterAttack);
+    return;
+  }
+  const kills=W[k].kill, kind=k==='cannon'?'ball':'grenade';
+  const consume=()=>{if(k==='cannon')useCannon(a);else a.inv.grenade--};
+  const hit=()=>strike(i,t,kind,false,()=>{consume();const n=kill(d,kills);log(`${W[k].n} ${a.name} أصاب ${d.name}: قتل ${ar(n)}`,'hit');FX.push({i:t,h:sgn('−',n),k:'hit'})});
+  if(k==='grenade'&&d.inv.armor){
+    blocked(i,t,kind,()=>{consume();log(`قنبلة ${a.name} ما أثّرت — جنود ${d.name} مدرّعون`,'block');FX.push({i:t,t:'صُدّت',k:'block'})});
+    return;
+  }
+  if(d.inv.anti>0){
+    modal('مضاد قذائف','',`<p>عند <b>${esc(d.name)}</b> ${ar(d.inv.anti)} مضاد قذائف. يستخدمون واحد ويصدّون ${W[k].n} <b>${esc(a.name)}</b>؟</p>`,[
+      {t:'نعم — صدّ الضربة',cls:'b-green',fn:()=>{blocked(i,t,kind,()=>{consume();d.inv.anti--;log(`${d.name} صدّت ${W[k].n} ${a.name} بمضاد قذائف`,'block');FX.push({i:t,t:'صُدّت',k:'block'})})}},
+      {t:'لا — خلّها تمر',cls:'b-brick',fn:hit},
+      {t:'إلغاء'}]);
+    return;
+  }
+  hit();
+}
+
+/* ===== winner ===== */
+function ranking(){
+  return S.fams.map((f,i)=>({f,i})).sort((x,y)=>y.f.soldiers-x.f.soldiers||y.f.money-x.f.money);
+}
+let confId=null;
+function showWinner(auto){
+  closeModal();timerStop();
+  const r=ranking(), top=r[0].f.soldiers, winners=r.filter(x=>x.f.soldiers===top);
+  $('#winKicker').textContent=auto?'غرقت الأساطيل — انتهت المعركة':'انتهت المعركة';
+  if(winners.length>1){$('#winName').textContent='تعادل!';$('#winSub').textContent=winners.map(w=>w.f.name).join(' و ')+` · ${ar(top)} جندي لكل أسرة`;}
+  else{$('#winName').textContent=r[0].f.name;$('#winSub').textContent=`فازت بالمعركة بـ${ar(top)} جندي`;}
+  let rank=0,prev=null;const rk=r.map((x,k)=>{if(x.f.soldiers!==prev){rank=k+1;prev=x.f.soldiers}return{...x,rank}});
+  const order=[rk[1],rk[0],...rk.slice(2)].filter(Boolean);
+  $('#podium').innerHTML=order.map(x=>`<div class="pod r${Math.min(x.rank,3)}" style="--fc:${FCOL[x.i]};--o:${x.rank}">
+      <svg class="mini" viewBox="0 0 160 110" style="color:${FCOL[x.i]}">${shipSVG().replace(/^<svg[^>]*>|<\/svg>$/g,'').replace(/class="sail"/g,`fill="${FCOL[x.i]}"`)}</svg>
+      <div class="nm">${esc(x.f.name)}</div><div class="sc">${ar(x.f.soldiers)} جندي · ${money(x.f.money)}</div>
+      <div class="blk">${ar(x.rank)}</div></div>`).join('');
+  $('#win').classList.add('show');sfx.fanfare();confetti();
+}
+function hideWinner(){$('#win').classList.remove('show');cancelAnimationFrame(confId);confId=null}
+function confetti(){
+  const cv=$('#conf'),cx=cv.getContext('2d');let W_=cv.width=innerWidth,H_=cv.height=innerHeight;
+  const cols=['#e5bd52','#efe4d8','#9b3b2a','#7f9a92','#c9b8a3','#4d6e41','#fff'];
+  const P=Array.from({length:180},()=>({x:Math.random()*W_,y:-Math.random()*H_,w:6+Math.random()*8,h:8+Math.random()*10,vy:1.5+Math.random()*3,vx:-1+Math.random()*2,r:Math.random()*6,vr:-.15+Math.random()*.3,c:cols[Math.floor(Math.random()*cols.length)]}));
+  cancelAnimationFrame(confId);const start=performance.now();
+  (function loop(now){
+    cx.clearRect(0,0,W_,H_);const keep=now-start<7000;
+    P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;if(p.y>H_+20&&keep){p.y=-20;p.x=Math.random()*W_}
+      cx.save();cx.translate(p.x,p.y);cx.rotate(p.r);cx.fillStyle=p.c;cx.fillRect(-p.w/2,-p.h/2,p.w,p.h);cx.restore()});
+    if(keep||P.some(p=>p.y<H_+20))confId=requestAnimationFrame(loop);
+  })(start);
+}
+function checkEnd(){
+  const left=S.fams.filter(f=>f.soldiers>0).length;
+  if(left<=1&&!S.endShown){S.endShown=true;save();setTimeout(()=>showWinner(true),1400)}
+  if(left>1&&S.endShown){S.endShown=false;save()}
+}
+$('#endBtn').onclick=()=>{sfx.unlock();modal('إنهاء المسابقة؟','','<p>بتطلع شاشة الفائز حسب عدد الجنود الحالي. تقدر ترجع للوحة بعدها.</p>',[{t:'إيه، أعلن الفائز',cls:'b-brick',fn:()=>{setTimeout(()=>showWinner(false))}},{t:'لا'}])};
+$('#winBack').onclick=hideWinner;
+$('#winNew').onclick=()=>{hideWinner();H=[];S=fresh(S);save();render();toast('بدأت مسابقة جديدة')};
+
+/* ===== bank / edit / settings / rules ===== */
+function bankModal(){
+  const txt=(S.bank||[]).map(x=>x.a?`${x.q} | ${x.a}`:x.q).join('\n');
+  const off=S.off||[], all=[...BUILTIN,...(S.bank||[]).map(x=>({...x,c:'أسئلتي'}))];
+  const cats=[...CATS,...((S.bank||[]).length?['أسئلتي']:[])];
+  const cnt=c=>all.filter(x=>x.c===c).length;
+  modal('بنك الأسئلة',`${ar(qbank().length)} سؤال مفعّل · تطلع عشوائي وما يتكرر سؤال في نفس المسابقة`,`<div class="form">
+    <div class="full" style="font-weight:800;font-size:15px">الأقسام</div>
+    <div class="full cats">${cats.map(c=>`<label class="chk catchk"><input type="checkbox" data-cat="${esc(c)}" ${off.includes(c)?'':'checked'}> ${esc(c)} <small>(${ar(cnt(c))})</small></label>`).join('')}</div>
+    <label class="full">أسئلة إضافية خاصة بك — كل سطر سؤال، والجواب بعد الخط «|»<textarea id="b_txt" style="min-height:150px" placeholder="اكتب السؤال هنا | واكتب جوابه هنا&#10;السؤال الثاني | جوابه">${esc(txt)}</textarea></label>
+    <div class="full hint">أسئلتك تنضاف للأسئلة الجاهزة في قسم «أسئلتي». الحفظ يخلط الأسئلة من جديد ويبدأ العدّ من أول.</div>
+  </div>`,[{t:'حفظ',cls:'b-olive',fn:()=>{
+    const list=$('#b_txt').value.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const k=l.indexOf('|');return k<0?{q:l,a:''}:{q:l.slice(0,k).trim(),a:l.slice(k+1).trim()}}).filter(x=>x.q);
+    const offNew=[...document.querySelectorAll('[data-cat]')].filter(x=>!x.checked).map(x=>x.dataset.cat);
+    act(()=>{S.bank=list;S.off=offNew;S.order=null;ensureOrder();S.q=0;S.qs=null;S.rev=false});
+    toast(`${ar(qbank().length)} سؤال جاهز`);
+  }},{t:'إلغاء'}]);
+}
+function edit(i){
+  const f=S.fams[i];
+  const num=(id,lbl,v)=>`<label>${lbl}<input type="number" min="0" id="${id}" value="${v}"></label>`;
+  modal('تعديل يدوي',esc(f.name)+' · لتصحيح أي خطأ',`<div class="form">
+    ${num('e_s','الجنود',f.soldiers)}${num('e_m','الخزينة (بالألف)',f.money/1000)}
+    ${num('e_cannon','مدافع',f.inv.cannon)}${num('e_anti','مضادات قذائف',f.inv.anti)}
+    ${num('e_grenade','قنابل يدوية',f.inv.grenade)}${num('e_spy','جواسيس',f.inv.spy)}
+    ${num('e_disable','تعطيل أسطول',f.inv.disable)}
+    <label>تدريع الجنود<select id="e_armor"><option value="0">لا</option><option value="1" ${f.inv.armor?'selected':''}>نعم</option></select></label>
+    <label class="full">كرت المضاعفة<select id="e_double"><option value="1">متوفر</option><option value="0" ${f.double?'':'selected'}>مستخدم</option></select></label>
+  </div>`,[{t:'حفظ',cls:'b-olive',fn:()=>{
+    const g=id=>Math.max(0,Math.round(+document.getElementById(id).value||0));
+    act(()=>{f.soldiers=g('e_s');f.money=g('e_m')*1000;['cannon','anti','grenade','spy','disable'].forEach(k=>f.inv[k]=g('e_'+k));
+      f.inv.armor=+$('#e_armor').value;f.double=+$('#e_double').value;log(`تعديل يدوي على ${f.name}`,'')});
+  }},{t:'إلغاء'}]);
+}
+function settings(){
+  modal('الإعدادات','',`<div class="form">
+    <label>حد المدافع لكل أسرة<select id="s_c">${[1,2,3,0].map(v=>`<option value="${v}" ${S.cannonLimit===v?'selected':''}>${v?ar(v):'بلا حد'}</option>`).join('')}</select></label>
+    <label>مكافأة الجواب الصح<select id="s_r">${[5000,10000,15000,20000].map(v=>`<option value="${v}" ${S.reward===v?'selected':''}>${money(v)}</option>`).join('')}</select></label>
+    <label>وقت المؤقت<select id="s_t">${[15,20,30,45,60].map(v=>`<option value="${v}" ${S.timerSec===v?'selected':''}>${ar(v)} ثانية</option>`).join('')}</select></label>
+    <label>الدور الحالي على<select id="s_turn">${S.fams.map((f,i)=>`<option value="${i}" ${S.turn===i?'selected':''}>${esc(f.name)}</option>`).join('')}</select></label>
+    <label>رقم الجولة<input type="number" min="1" id="s_round" value="${S.round}"></label>
+    <label>عدد الهجمات في الدور<select id="s_apt">${[1,2,3].map(v=>`<option value="${v}" ${S.attacksPerTurn===v?'selected':''}>${ar(v)}</option>`).join('')}</select></label>
+    <label>الجولة الأولى<select id="s_r1"><option value="1">تجهيز فقط (بدون هجوم)</option><option value="0" ${S.noAttackR1?'':'selected'}>الهجوم مسموح</option></select></label>
+    <label>الجواب الخطأ<select id="s_bw">${[['both','بدون فلوس، ويقدرون يشترون ويهاجمون'],['buy','بدون فلوس، ويشترون فقط'],['skip','ينتقل الدور مباشرة']].map(([v,l])=>`<option value="${v}" ${S.wrongMode===v?'selected':''}>${l}</option>`).join('')}</select></label>
+  </div>
+  <div class="danger"><p style="font-size:15px;margin:0 0 8px">مسابقة جديدة ترجّع كل أسرة لـ٥٠ جندي و٢٠ ألف وتحذف الأسلحة والسجل. الأسماء والأسئلة تبقى.</p>
+  <button class="btn b-brick" id="s_reset" style="width:100%">ابدأ مسابقة جديدة</button></div>`,
+  [{t:'حفظ',cls:'b-olive',fn:()=>act(()=>{S.cannonLimit=+$('#s_c').value;S.reward=+$('#s_r').value;S.timerSec=+$('#s_t').value;S.turn=+$('#s_turn').value;S.attacksPerTurn=+$('#s_apt').value;S.wrongMode=$('#s_bw').value;S.noAttackR1=$('#s_r1').value==='1';S.round=Math.max(1,Math.round(+$('#s_round').value||1));timerStop()})},{t:'إغلاق'}]);
+  $('#s_reset').onclick=()=>{
+    modal('متأكد؟','','<p>بتنمسح النتائج الحالية وتبدأ المسابقة من الصفر.</p>',[
+      {t:'إيه، ابدأ من جديد',cls:'b-brick',fn:()=>{H=[];timerStop();S=fresh(S);save();render();toast('بدأت مسابقة جديدة')}},{t:'لا'}]);
+  };
+}
+function rules(){
+  modal('قوانين المسابقة','',`<div style="font-size:17px;line-height:1.9">
+    <p>• لكل أسرة أسطول من <b>٥٠ جندي</b>، والأسطول اللي يحافظ على أكبر عدد من جنوده هو الفائز.</p>
+    <p>• كل أسرة تبدأ بـ<b>٢٠ ألف</b>، وعلى كل جواب صح تاخذ <b>${money(S.reward)}</b>.</p>
+    <p>• في كل دور: سؤال للأسرة. <b>صح</b> ← تاخذ ${money(S.reward)} وتقدر تشتري ثم تهاجم ${S.attacksPerTurn>1?ar(S.attacksPerTurn)+' مرات':'مرة وحدة'}. <b>خطأ</b> ← ${S.wrongMode==='both'?'ما تاخذ فلوس، بس تقدر تشتري من رصيدها وتهاجم':S.wrongMode==='buy'?'ما تاخذ فلوس، وتقدر تشتري فقط':'ما تاخذ فلوس، وينتقل الدور'}.</p>
+    <p>• بعد ما تمر كل الأسر تبدأ جولة جديدة.</p>
+    <p>• المدفع يبقى مع الأسرة ويُستخدم مرة كل جولة${S.cannonLimit?` · الحد ${ar(S.cannonLimit)} لكل أسرة`:''}.</p>
+    <p>• كل أسرة تبدأ ومعها <b>كرت المضاعفة</b> ويُستخدم مرة واحدة.</p></div>`,[{t:'تم',cls:'b-olive'}]);
+}
+
+/* ===== wiring ===== */
+$('#grid').addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b||b.disabled)return;
+  sfx.unlock();
+  const i=+b.dataset.i, f=S.fams[i];
+  switch(b.dataset.act){
+    case 'edit':edit(i);break;
+    case 'undis':act(()=>{f.disabledThrough=0;log(`رُفع التعطيل عن ${f.name}`,'')});break;
+  }
+});
+$('#grid').addEventListener('change',e=>{
+  if(!e.target.classList.contains('fam-name'))return;
+  const i=+e.target.dataset.i, v=e.target.value.trim()||S.fams[i].name;
+  if(v!==S.fams[i].name)act(()=>{S.fams[i].name=v});
+});
+$('#grid').addEventListener('keydown',e=>{if(e.target.classList.contains('fam-name')&&e.key==='Enter')e.target.blur()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();if($('#win').classList.contains('show'))hideWinner()}});
+$('#undo').onclick=()=>{cancelAuto();if(!H.length)return;S=JSON.parse(H.pop());save();render();toast('تم التراجع عن آخر خطوة')};
+$('#settings').onclick=settings;
+$('#subt').addEventListener('change',e=>{S.subtitle=e.target.value.trim();save();toast(S.subtitle?'انحفظ العنوان':'انحذف العنوان')});
+$('#subt').addEventListener('keydown',e=>{if(e.key==='Enter')e.target.blur()});
+function famsModal(){
+  const row=(f,i)=>`<div class="frow" ${i!=null?`data-i="${i}"`:''}>
+      <span class="fdot" style="background:${FCOL[i!=null?i:S.fams.length]}"></span>
+      <input class="f-n" maxlength="28" placeholder="اسم الأسرة" value="${f?esc(f.name):''}">
+      <input class="f-l" maxlength="28" placeholder="القائد (اختياري)" value="${f?esc(f.leader||''):''}">
+      <button class="fdel" title="حذف الأسرة">×</button></div>`;
+  modal('الأسر','أضف أسرة أو عدّل الأسماء والقادة',`<div id="frows" class="frows">${S.fams.map((f,i)=>row(f,i)).join('')}</div>
+    <button class="btn b-ghost" id="fAdd" style="width:100%;margin-top:10px">+ إضافة أسرة</button>
+    <div class="hint" style="margin-top:8px">الأسرة الجديدة تبدأ بـ٥٠ جندي و٢٠ ألف وكرت مضاعفة. والدور يمشي بنفس ترتيب القائمة.</div>`,
+  [{t:'حفظ',cls:'b-olive',fn:()=>{
+    const rows=[...document.querySelectorAll('#frows .frow')];
+    const list=rows.map((r,k)=>({i:r.dataset.i!=null?+r.dataset.i:null,name:r.querySelector('.f-n').value.trim()||('أسرة '+ar(k+1)),leader:r.querySelector('.f-l').value.trim()}));
+    if(list.length<2){toast('لازم أسرتين على الأقل');return false}
+    const turnFam=S.fams[S.turn];
+    act(()=>{
+      const added=[],removed=S.fams.filter((_,i)=>!list.some(x=>x.i===i)).map(f=>f.name);
+      S.fams=list.map(x=>{if(x.i!=null){const f=S.fams[x.i];f.name=x.name;f.leader=x.leader;return f}added.push(x.name);return newFam(x.name,x.leader)});
+      const t=S.fams.indexOf(turnFam);S.turn=t>=0?t:0;
+      added.forEach(n=>log(`انضمت ${n} للمعركة`,'gain'));removed.forEach(n=>log(`خرجت ${n} من المسابقة`,''));
+    });
+    toast('انحفظت الأسر');
+  }},{t:'إلغاء'}]);
+  const wire=()=>{document.querySelectorAll('#frows .fdel').forEach(b=>b.onclick=()=>{if(document.querySelectorAll('#frows .frow').length<=2){toast('لازم أسرتين على الأقل');return}b.closest('.frow').remove()})};
+  wire();
+  $('#fAdd').onclick=()=>{const box=$('#frows');if(box.children.length>=8){toast('الحد ٨ أسر');return}box.insertAdjacentHTML('beforeend',row(null,null).replace(/background:[^"]+/,'background:'+FCOL[box.children.length]));wire();box.lastElementChild.querySelector('.f-n').focus()};
+}
+$('#famsBtn').onclick=famsModal;
+
+$('#bank').onclick=bankModal;
+$('#mute').onclick=()=>{muted=!muted;try{localStorage.setItem(MKEY,muted?'1':'0')}catch(e){}render();if(!muted)sfx.coin();toast(muted?'الصوت مقفل':'الصوت شغّال')};
+$('#fs').onclick=()=>{try{const d=document;if(d.fullscreenElement){d.exitFullscreen()}else{const p=d.documentElement.requestFullscreen&&d.documentElement.requestFullscreen();if(p&&p.catch)p.catch(()=>toast('ملء الشاشة غير متاح هنا'))}}catch(e){toast('ملء الشاشة غير متاح هنا')}};
+addEventListener('resize',()=>{if(confId){const cv=$('#conf');cv.width=innerWidth;cv.height=innerHeight}});
+
+load();render();timerShow();
+/* ===== intro walkthrough ===== */
+const IKEY='barbarossa-intro-seen';
+let iIdx=0;
+function buildIntro(){
+  const names=S.fams.map(f=>esc(f.name));
+  const ship=c=>`<div class="bobber" style="--fc:${c}">${shipSVG()}</div>`;
+  let troops='';for(let j=0;j<50;j++)troops+=`<svg viewBox="0 0 10 14" style="--i:${j}"><use href="#sol"/></svg>`;
+  const W6=SHOP.map((k,i)=>`<div class="wc" style="--i:${i}"><span class="wi">${ICON[k]}</span><b>${W[k].n}<em>${money(W[k].p)}</em></b><span>${W[k].d}</span></div>`).join('');
+  const slides=[
+`<section class="slide">
+  ${S.subtitle?`<div class="kick ani">${esc(S.subtitle)}</div>`:''}
+  <h2 class="hero-t">الأخوين بربروسا</h2>
+  <p class="ani" style="--i:3;margin-top:4px">معركة بحرية بين ${({2:'أسرتين',3:'ثلاث أسر',4:'أربع أسر',5:'خمس أسر',6:'ست أسر',7:'سبع أسر',8:'ثماني أسر'})[S.fams.length]||'الأسر'}… وسلاحكم الأقوى: <b>معلوماتكم</b></p>
+  <div class="fleet">${S.fams.map((f,i,a)=>`<div class="hs" style="right:${(4+i*(92/a.length)).toFixed(1)}%;width:${Math.min(19,(88/a.length)).toFixed(1)}%;animation-delay:${(i*.22).toFixed(2)}s!important">${ship(FCOL[i])}</div>`).join('')}${WAVES}</div>
+  <div class="fam-pills">${names.map((n,i)=>`<span class="ani" style="--i:${6+i};background:${FCOL[i]}">${n}</span>`).join('')}</div>
+</section>`,
+`<section class="slide">
+  <div class="step-kick ani">١ · الأسطول</div>
+  <h3 class="ani" style="--i:1">لكل أسرة أسطول من <em>٥٠ جندي</em></h3>
+  <div class="demo"><div class="demo-num"><b data-count="50">٠</b><span>جندي</span></div><div class="demo-troops">${troops}</div></div>
+  <p class="ani" style="--i:4">الهدف: تحافظون على جنودكم… وتنقّصون جنود غيركم.<br><b>الأسرة اللي يبقى عندها أكثر جنود في النهاية هي الفائزة.</b></p>
+</section>`,
+`<section class="slide">
+  <div class="step-kick ani">٢ · الخزينة</div>
+  <h3 class="ani" style="--i:1">الفلوس = <em>سلاح</em></h3>
+  <div class="money-demo">
+    <div class="coins">${[0,1,2,3,4].map(i=>`<i style="--i:${i};bottom:${i*26}px"></i>`).join('')}</div>
+    <div class="m-col">
+      <div class="m-row ani" style="--i:3"><b data-count="20" data-suffix=" ألف">٠</b><span>رصيد كل أسرة في البداية</span></div>
+      <div class="m-row plus ani" style="--i:5"><b>+١٠ آلاف</b><span>على كل جواب صح</span></div>
+      <div class="m-row buy ani" style="--i:7"><b>السوق</b><span>بالفلوس تشترون أسلحة الهجوم والدفاع</span></div>
+    </div>
+  </div>
+</section>`,
+`<section class="slide">
+  <div class="step-kick ani">٣ · الدور</div>
+  <h3 class="ani" style="--i:1">كيف يمشي الدور؟</h3>
+  <div class="flow">
+    <div class="fs ani" style="--i:2"><div class="fi">؟</div><b>سؤال</b><span>للأسرة اللي عليها الدور</span></div><div class="fa ani" style="--i:3">←</div>
+    <div class="fs r ani" style="--i:4"><div class="fi">✓</div><b>صح أو خطأ</b><span>الصح يعطيكم ١٠ آلاف<br>والخطأ بدون فلوس</span></div><div class="fa ani" style="--i:5">←</div>
+    <div class="fs ani" style="--i:6"><div class="fi">${ICON.coin}</div><b>شراء</b><span>من سوق السلاح<br>(إذا تبون)</span></div><div class="fa ani" style="--i:7">←</div>
+    <div class="fs a ani" style="--i:8"><div class="fi">${ICON.cannon}</div><b>هجوم</b><span>على أسرة ثانية</span></div><div class="fa ani" style="--i:9">←</div>
+    <div class="fs n ani" style="--i:10"><div class="fi">↺</div><b>الأسرة التالية</b><span>الدور ينتقل تلقائيًا</span></div>
+  </div>
+  <p class="note ani" style="--i:12">الترتيب: ${names.join(' ← ')} … وبعدها تبدأ جولة جديدة</p>
+</section>`,
+`<section class="slide">
+  <div class="step-kick ani">٤ · الجولة الأولى</div>
+  <h3 class="ani" style="--i:1">الجولة الأولى = <em>جولة تجهيز</em></h3>
+  <div class="prep">
+    <div class="prep-ships">${S.fams.map((f,i)=>`<div class="pship ani" style="--i:${2+i}"><div class="bobber" style="--fc:${FCOL[i]}">${shipSVG()}</div><span class="pshield">${ICON.anti}</span></div>`).join('')}</div>
+    <div class="dlist">
+      <div class="ani" style="--i:5">كل الأسر تجاوب وتجمع فلوس وتشتري أسلحتها ودروعها</div>
+      <div class="ani" style="--i:6"><b>ممنوع الهجوم في الجولة الأولى</b> — حتى لو جاوبتوا صح</div>
+      <div class="ani" style="--i:7">ليش؟ <b>عشان العدل</b>: لو بدأ الهجوم من أول دور، الأسرة اللي تلعب أول تضرب غيرها قبل ما يلحق يشتري أي حماية</div>
+      <div class="ani" style="--i:8">ومن <b>الجولة الثانية</b>… يبدأ القصف!</div>
+    </div>
+  </div>
+</section>`,
+`<section class="slide">
+  <div class="step-kick ani">٥ · سوق السلاح</div>
+  <h3 class="ani" style="--i:1">اختاروا أسلحتكم بذكاء</h3>
+  <div class="wgrid">${W6}</div>
+</section>`,
+`<section class="slide">
+  <div class="step-kick ani">٦ · الهجوم والدفاع</div>
+  <h3 class="ani" style="--i:1">اضرب… أو احمِ أسطولك</h3>
+  <div class="battle"><div class="bs a">${ship(FCOL[0])}</div><div class="bs b"><div class="shk">${ship(FCOL[1])}</div></div><div class="bball"></div><div class="bboom"></div><div class="bnum"><bdi dir="ltr">−٨</bdi></div>${WAVES}</div>
+  <div class="rl">
+    <span class="ani" style="--i:3">${ICON.cannon}المدفع يبقى معكم ويضرب مرة كل جولة</span>
+    <span class="ani" style="--i:4">${ICON.anti}المضاد يصد قذيفة وحدة</span>
+    <span class="ani" style="--i:5">${ICON.armor}التدريع يصد كل القنابل اليدوية</span>
+    <span class="ani" style="--i:6">${ICON.spy}الجاسوس يسحب ١٠ جنود لجيشكم</span>
+    <span class="ani" style="--i:7">${ICON.disable}التعطيل يوقف أسلحة أسرة جولة كاملة</span>
+  </div>
+</section>`,
+`<section class="slide">
+  <div class="step-kick ani">٧ · الورقة الرابحة</div>
+  <h3 class="ani" style="--i:1">كرت المضاعفة</h3>
+  <div class="drow">
+    <div class="dcard"><div class="dt">الأخوين بربروسا</div><div class="dn">كرت مضاعفة</div><div class="dx">×٢</div></div>
+    <div class="dlist">
+      <div class="ani" style="--i:3">كل أسرة تبدأ ومعها <b>كرت واحد</b> مجانًا</div>
+      <div class="ani" style="--i:4">قذيفة <b>ما تنصد</b> وتقتل <b>١٦ جندي</b></div>
+      <div class="ani" style="--i:5">بشرط تفوزون في سؤال <b>«أسرع جواب»</b> ضد الأسرة اللي تهاجمونها</div>
+      <div class="ani" style="--i:6">يُستخدم <b>مرة واحدة</b> بس… فاختاروا وقته صح!</div>
+    </div>
+  </div>
+</section>`,
+`<section class="slide">
+  <svg class="i-trophy" viewBox="0 0 24 24" fill="currentColor"><path d="M7 3h10v2h3v2.5c0 2.6-1.9 4.7-4.4 5A5 5 0 0 1 13 15.9V18h3v3H8v-3h3v-2.1a5 5 0 0 1-2.6-3.4C5.9 12.2 4 10.1 4 7.5V5h3zm0 4H6v.5c0 1.3.8 2.4 2 2.8A9 9 0 0 1 7 7zm10 0c0 1.2-.3 2.3-1 3.3 1.2-.4 2-1.5 2-2.8V7z"/></svg>
+  <h3 class="ani" style="--i:2">مين يفوز؟</h3>
+  <p class="ani" style="--i:3">تنتهي المعركة بنهاية الأسئلة أو إذا غرقت الأساطيل…<br><b>والأسرة اللي عندها أكثر جنود هي بطلة «الأخوين بربروسا»!</b></p>
+  <div class="go-row ani" style="--i:5"><button class="go-1" id="goTour">تعرّفوا على الشاشة</button><button class="go-2" id="goStart">يلا نبدأ المعركة!</button></div>
+</section>`];
+  $('#iStage').innerHTML=slides.join('');
+  $('#iDots').innerHTML=slides.map((_,k)=>`<i data-k="${k}"></i>`).join('');
+  $('#iDots').querySelectorAll('i').forEach(d=>d.onclick=()=>goSlide(+d.dataset.k));
+  $('#goTour').onclick=()=>{closeIntro();startTour()};
+  $('#goStart').onclick=()=>{closeIntro();letsGo()};
+}
+function countUp(el){
+  const to=+el.dataset.count, suf=el.dataset.suffix||'', t0=performance.now(), dur=1300;
+  (function f(now){const p=Math.min(1,(now-t0)/dur),v=Math.round(to*(1-Math.pow(1-p,3)));el.textContent=ar(v)+suf;if(p<1&&el.isConnected)requestAnimationFrame(f)})(t0);
+}
+function goSlide(k){
+  const sl=[...document.querySelectorAll('#iStage .slide')];k=Math.max(0,Math.min(sl.length-1,k));
+  sl.forEach((s,j)=>{s.classList.remove('active');s.classList.toggle('past',j<k)});
+  void document.body.offsetWidth;sl[k].classList.add('active');
+  sl[k].querySelectorAll('[data-count]').forEach(el=>{el.textContent=ar(0)+(el.dataset.suffix||'');setTimeout(()=>countUp(el),350)});
+  if(k!==iIdx)sfx.whoosh(.5);
+  iIdx=k;fitBattle();
+  $('#iDots').querySelectorAll('i').forEach((d,j)=>d.classList.toggle('on',j===k));
+  $('#iPrev').style.visibility=k?'visible':'hidden';
+  $('#iNext').textContent=k===sl.length-1?'تعرّفوا على الشاشة ←':'التالي ←';
+}
+function openIntro(){closeModal();buildIntro();iIdx=-1;$('#intro').classList.add('show');goSlide(0)}
+function closeIntro(){$('#intro').classList.remove('show');try{localStorage.setItem(IKEY,'1')}catch(e){}}
+function introNext(){const n=document.querySelectorAll('#iStage .slide').length;if(iIdx>=n-1){closeIntro();startTour()}else goSlide(iIdx+1)}
+$('#iNext').onclick=()=>{sfx.unlock();introNext()};
+$('#iPrev').onclick=()=>goSlide(iIdx-1);
+$('#iSkip').onclick=closeIntro;
+$('#help').onclick=()=>{sfx.unlock();openIntro()};
+
+/* spotlight tour of the real screen */
+const TOUR=[
+  ['#qpanel','شريط السؤال','هنا يطلع السؤال واسم الأسرة اللي عليها الدور. المشرف يضغط «صح» أو «خطأ»، وبعدها تطلع أزرار «شراء» و«هجوم».'],
+  ['[data-card="0"]','خانة الأسرة','لكل أسرة خانة فيها كل شي يخصها. الخانة اللي تلمع وعليها «دورهم» هي صاحبة الدور.'],
+  ['[data-card="0"] .mid','الجنود والسفينة','الرقم الكبير = عدد الجنود الباقين. كل ما قلّوا تميل السفينة ويطلع منها دخان… وإذا خلصوا تغرق!'],
+  ['[data-card="0"] .money','الخزينة','فلوس الأسرة. تزيد ١٠ آلاف مع كل جواب صح، ومنها تشترون الأسلحة.'],
+  ['[data-card="0"] .inv','الأسلحة','كل سلاح تشترونه يطلع هنا، ومعه كرت المضاعفة (ويتشطب إذا استخدمتوه).'],
+  ['.round','الجولة','رقم الجولة. الجولة الأولى للتجهيز بدون هجوم، وتبدأ جولة جديدة بعد ما تاخذ كل الأسر دورها، وترجع المدافع جاهزة.'],
+  ['.logwrap','سجل المعركة','كل هجوم وشراء وجواب مكتوب هنا، عشان ما يضيع شي.']
+];
+let tIdx=0;
+function startTour(){document.body.style.overflow='hidden';$('#tour').classList.add('show');tIdx=0;placeTour()}
+function endTour(go){$('#tour').classList.remove('show');document.body.style.overflow='';if(go)letsGo()}
+function placeTour(){
+  const [sel,h,p]=TOUR[tIdx], el=document.querySelector(sel);
+  if(!el){tIdx<TOUR.length-1?(tIdx++,placeTour()):endTour(true);return}
+  el.scrollIntoView({block:'center'});
+  const r=el.getBoundingClientRect(), pad=8, hole=$('#hole');
+  hole.style.left=(r.left-pad)+'px';hole.style.top=(r.top-pad)+'px';hole.style.width=(r.width+pad*2)+'px';hole.style.height=(r.height+pad*2)+'px';
+  $('#tipN').textContent=`${ar(tIdx+1)} / ${ar(TOUR.length)}`;$('#tipH').textContent=h;$('#tipP').textContent=p;
+  $('#tPrev').style.visibility=tIdx?'visible':'hidden';
+  $('#tNext').textContent=tIdx===TOUR.length-1?'يلا نبدأ!':'التالي';
+  const tip=$('#tip'),tw=tip.offsetWidth,th=tip.offsetHeight;
+  let top=r.bottom+pad+14; if(top+th>innerHeight-10)top=r.top-pad-14-th; if(top<10)top=Math.min(innerHeight-th-10,r.top+20);
+  let left=r.left+r.width/2-tw/2; left=Math.max(14,Math.min(innerWidth-tw-14,left));
+  tip.style.top=top+'px';tip.style.left=left+'px';
+}
+$('#tNext').onclick=()=>{sfx.unlock();if(tIdx>=TOUR.length-1)endTour(true);else{tIdx++;placeTour()}};
+$('#tPrev').onclick=()=>{if(tIdx>0){tIdx--;placeTour()}};
+$('#tSkip').onclick=()=>endTour(false);
+addEventListener('resize',()=>{if($('#tour').classList.contains('show'))placeTour()});
+function letsGo(){sfx.drum();banner(prepRound()?'يلا نبدأ! جولة التجهيز':'يلا نبدأ!','الجولة '+ar(S.round),2000)}
+document.addEventListener('keydown',e=>{
+  if($('#intro').classList.contains('show')){
+    if(e.key==='ArrowLeft'||e.key===' '||e.key==='Enter'){e.preventDefault();introNext()}
+    else if(e.key==='ArrowRight'){e.preventDefault();goSlide(iIdx-1)}
+    else if(e.key==='Escape')closeIntro();
+  }else if($('#tour').classList.contains('show')){
+    if(e.key==='ArrowLeft'||e.key==='Enter'){e.preventDefault();$('#tNext').click()}
+    else if(e.key==='ArrowRight'){e.preventDefault();$('#tPrev').click()}
+    else if(e.key==='Escape')endTour(false);
+  }
+});
+
+try{if(localStorage.getItem(IKEY)!=='1')openIntro()}catch(e){openIntro()}
+</script>
+</body>
+</html>
