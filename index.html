@@ -71,6 +71,8 @@ header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14
 .qb.no{background:var(--brick)} .qb.no:hover:not(:disabled){background:var(--brick-2)}
 .qb.soft{background:rgba(239,228,216,.14);color:var(--cream)} .qb.soft:hover:not(:disabled){background:rgba(239,228,216,.26)}
 .qb.next{background:var(--cream);color:var(--olive)} .qb.next:hover{background:#fff}
+.qb.go{background:#f3d48a;color:var(--olive-d)} .qb.go:hover{background:#f7e0a6} .qb.go.on{background:var(--brick);color:#fff}
+.qb svg{width:18px;height:18px;vertical-align:-3px;margin-inline-end:5px}
 .qb.big{font-size:20px;padding:12px 22px}
 .qb.shop{background:#6e735c} .qb.shop:hover:not(:disabled){background:#7d826a}
 .qb.atk{background:var(--brick)} .qb.atk:hover:not(:disabled){background:var(--brick-2)}
@@ -574,6 +576,8 @@ button.opt:hover:not(:disabled){border-color:var(--olive);background:#fff}
     </div>
     <div class="q-ctrl">
       <button class="timer" id="qTimer" title="مؤقت السؤال"><span id="qTimerVal">٣٠</span></button>
+      <button class="qb go" id="qTimeBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg><span>ابدأ الوقت</span></button>
+      <button class="qb soft" id="qSwap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16M20 20v-4h-4"/></svg><span>تغيير السؤال</span></button>
       <button class="qb soft" id="qReveal">إظهار الجواب</button>
       <button class="qb ok big" id="qRight">صح ✓</button>
       <button class="qb no big" id="qWrong">خطأ ✗</button>
@@ -804,7 +808,7 @@ function renderQ(){
   a.classList.toggle('show',!!((S.rev||!q)&&a.textContent));
   const qc=$('#qCat');qc.innerHTML=item&&item.c?`<span>${esc(item.c)}</span>`:'';qc.classList.toggle('show',!!(q&&item&&item.c));
   const show=(id,v)=>{$(id).hidden=!v};
-  show('#qTimer',q);show('#qReveal',q&&!!(item&&item.a));show('#qRight',q);show('#qWrong',q);
+  show('#qTimer',q);show('#qTimeBtn',q);show('#qSwap',q&&!!bank.length);show('#qReveal',q&&!!(item&&item.a));show('#qRight',q);show('#qWrong',q);
   show('#qShop',!q&&canBuy());show('#qAttack',!q&&(S.qs==='right'||S.wrongMode==='both'));show('#qEnd',!q);
   $('#qReveal').textContent=S.rev?'إخفاء الجواب':'إظهار الجواب';
   const dis=isDis(f);
@@ -892,6 +896,7 @@ function timerShow(){
   const tot=S.timerSec, left=timer.id?timer.left:tot, el=$('#qTimer');
   $('#qTimerVal').textContent=ar(left);el.style.setProperty('--p',left/tot);
   el.classList.toggle('urgent',!!timer.id&&left<=5);
+  const tb=$('#qTimeBtn');if(tb){tb.classList.toggle('on',!!timer.id);tb.querySelector('span').textContent=timer.id?'إيقاف الوقت':'ابدأ الوقت'}
 }
 function timerStop(){clearInterval(timer.id);timer.id=null;timerShow()}
 function timerStart(){
@@ -903,6 +908,8 @@ function timerStart(){
 }
 $('#qTimer').onclick=()=>{sfx.unlock();timer.id?timerStop():timerStart()};
 $('#qReveal').onclick=()=>{S.rev=!S.rev;save();renderQ()};
+$('#qTimeBtn').onclick=()=>{sfx.unlock();timer.id?timerStop():timerStart()};
+$('#qSwap').onclick=()=>{sfx.unlock();if(!qbank().length){toast('ما فيه أسئلة في البنك');return}timerStop();ensureOrder();if(S.q+1>=S.order.length){toast('خلصت الأسئلة');return}act(()=>{S.q++;S.rev=false});sfx.sneak();toast('تم تغيير السؤال')};
 /* auto-advance to the next family */
 let auto=null;
 function cancelAuto(){if(auto){clearTimeout(auto);auto=null}$('#autobar').classList.remove('on')}
