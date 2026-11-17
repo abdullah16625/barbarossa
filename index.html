@@ -721,7 +721,7 @@ function fresh(keep){
   return {round:1,turn:0,q:0,qs:null,rev:false,phase:'q',atk:0,
     cannonLimit:keep?keep.cannonLimit:1,reward:keep?keep.reward:10000,timerSec:keep?keep.timerSec:30,
     wrongMode:keep?keep.wrongMode:'both',noAttackR1:keep?keep.noAttackR1!==false:true,attacksPerTurn:keep?keep.attacksPerTurn:1,
-    bank:keep?keep.bank:[],order:null,endShown:false,subtitle:keep?keep.subtitle:DEF_SUB,
+    bank:keep?keep.bank:[],order:null,endShown:false,subtitle:keep?keep.subtitle:DEF_SUB,off:keep?(keep.off||[]):[],cfgV:keep?(keep.cfgV||0):0,
     fams:keep?keep.fams.map(f=>newFam(f.name,f.leader)):NAMES.map((n,i)=>newFam(n,LEADERS[i])),
     log:[]};
 }
@@ -1175,7 +1175,7 @@ function bankModal(){
     const list=$('#b_txt').value.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const k=l.indexOf('|');return k<0?{q:l,a:''}:{q:l.slice(0,k).trim(),a:l.slice(k+1).trim()}}).filter(x=>x.q);
     const offNew=[...document.querySelectorAll('[data-cat]')].filter(x=>!x.checked).map(x=>x.dataset.cat);
     act(()=>{S.bank=list;S.off=offNew;S.order=null;ensureOrder();S.q=0;S.qs=null;S.rev=false});
-    toast(`${ar(qbank().length)} سؤال جاهز`);
+    toast(`${ar(qbank().length)} سؤال جاهز`);cfgChanged();
   }},{t:'إلغاء'}]);
 }
 function edit(i){
@@ -1205,9 +1205,11 @@ function settings(){
     <label>الجولة الأولى<select id="s_r1"><option value="1">تجهيز فقط (بدون هجوم)</option><option value="0" ${S.noAttackR1?'':'selected'}>الهجوم مسموح</option></select></label>
     <label>الجواب الخطأ<select id="s_bw">${[['both','بدون فلوس، ويقدرون يشترون ويهاجمون'],['buy','بدون فلوس، ويشترون فقط'],['skip','ينتقل الدور مباشرة']].map(([v,l])=>`<option value="${v}" ${S.wrongMode===v?'selected':''}>${l}</option>`).join('')}</select></label>
   </div>
+  ${syncBox()}
   <div class="danger"><p style="font-size:15px;margin:0 0 8px">مسابقة جديدة ترجّع كل أسرة لـ٥٠ جندي و٢٠ ألف وتحذف الأسلحة والسجل. الأسماء والأسئلة تبقى.</p>
   <button class="btn b-brick" id="s_reset" style="width:100%">ابدأ مسابقة جديدة</button></div>`,
-  [{t:'حفظ',cls:'b-olive',fn:()=>act(()=>{S.cannonLimit=+$('#s_c').value;S.reward=+$('#s_r').value;S.timerSec=+$('#s_t').value;S.turn=+$('#s_turn').value;S.attacksPerTurn=+$('#s_apt').value;S.wrongMode=$('#s_bw').value;S.noAttackR1=$('#s_r1').value==='1';S.round=Math.max(1,Math.round(+$('#s_round').value||1));timerStop()})},{t:'إغلاق'}]);
+  [{t:'حفظ',cls:'b-olive',fn:()=>{act(()=>{S.cannonLimit=+$('#s_c').value;S.reward=+$('#s_r').value;S.timerSec=+$('#s_t').value;S.turn=+$('#s_turn').value;S.attacksPerTurn=+$('#s_apt').value;S.wrongMode=$('#s_bw').value;S.noAttackR1=$('#s_r1').value==='1';S.round=Math.max(1,Math.round(+$('#s_round').value||1));timerStop()});cfgChanged()}},{t:'إغلاق'}]);
+  wireSync();
   $('#s_reset').onclick=()=>{
     modal('متأكد؟','','<p>بتنمسح النتائج الحالية وتبدأ المسابقة من الصفر.</p>',[
       {t:'إيه، ابدأ من جديد',cls:'b-brick',fn:()=>{H=[];timerStop();S=fresh(S);save();render();toast('بدأت مسابقة جديدة')}},{t:'لا'}]);
@@ -1236,13 +1238,13 @@ $('#grid').addEventListener('click',e=>{
 $('#grid').addEventListener('change',e=>{
   if(!e.target.classList.contains('fam-name'))return;
   const i=+e.target.dataset.i, v=e.target.value.trim()||S.fams[i].name;
-  if(v!==S.fams[i].name)act(()=>{S.fams[i].name=v});
+  if(v!==S.fams[i].name){act(()=>{S.fams[i].name=v});cfgChanged()}
 });
 $('#grid').addEventListener('keydown',e=>{if(e.target.classList.contains('fam-name')&&e.key==='Enter')e.target.blur()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();if($('#win').classList.contains('show'))hideWinner()}});
 $('#undo').onclick=()=>{cancelAuto();if(!H.length)return;S=JSON.parse(H.pop());save();render();toast('تم التراجع عن آخر خطوة')};
 $('#settings').onclick=settings;
-$('#subt').addEventListener('change',e=>{S.subtitle=e.target.value.trim();save();toast(S.subtitle?'انحفظ العنوان':'انحذف العنوان')});
+$('#subt').addEventListener('change',e=>{S.subtitle=e.target.value.trim();save();toast(S.subtitle?'انحفظ العنوان':'انحذف العنوان');cfgChanged()});
 $('#subt').addEventListener('keydown',e=>{if(e.key==='Enter')e.target.blur()});
 function famsModal(){
   const row=(f,i)=>`<div class="frow" ${i!=null?`data-i="${i}"`:''}>
@@ -1264,7 +1266,7 @@ function famsModal(){
       const t=S.fams.indexOf(turnFam);S.turn=t>=0?t:0;
       added.forEach(n=>log(`انضمت ${n} للمعركة`,'gain'));removed.forEach(n=>log(`خرجت ${n} من المسابقة`,''));
     });
-    toast('انحفظت الأسر');
+    toast('انحفظت الأسر');cfgChanged();
   }},{t:'إلغاء'}]);
   const wire=()=>{document.querySelectorAll('#frows .fdel').forEach(b=>b.onclick=()=>{if(document.querySelectorAll('#frows .frow').length<=2){toast('لازم أسرتين على الأقل');return}b.closest('.frow').remove()})};
   wire();
@@ -1277,7 +1279,72 @@ $('#mute').onclick=()=>{muted=!muted;try{localStorage.setItem(MKEY,muted?'1':'0'
 $('#fs').onclick=()=>{try{const d=document;if(d.fullscreenElement){d.exitFullscreen()}else{const p=d.documentElement.requestFullscreen&&d.documentElement.requestFullscreen();if(p&&p.catch)p.catch(()=>toast('ملء الشاشة غير متاح هنا'))}}catch(e){toast('ملء الشاشة غير متاح هنا')}};
 addEventListener('resize',()=>{if(confId){const cv=$('#conf');cv.width=innerWidth;cv.height=innerHeight}});
 
-load();render();timerShow();
+
+/* ===== shared settings: the organiser publishes, everyone with the link receives ===== */
+const REPO='abdullah16625/barbarossa', TKEY='barbarossa-gh-token', CFG_API=`https://api.github.com/repos/${REPO}/contents/config.json`;
+const getTok=()=>{try{return localStorage.getItem(TKEY)||''}catch(e){return''}};
+function cfgFromState(){return{v:Date.now(),fams:S.fams.map(f=>({name:f.name,leader:f.leader||''})),subtitle:S.subtitle||'',bank:S.bank||[],off:S.off||[],cannonLimit:S.cannonLimit,reward:S.reward,timerSec:S.timerSec,wrongMode:S.wrongMode,noAttackR1:S.noAttackR1,attacksPerTurn:S.attacksPerTurn}}
+function applyCfg(c){
+  if(!c||!c.v||c.v<=(S.cfgV||0))return false;
+  const list=Array.isArray(c.fams)?c.fams.filter(x=>x&&x.name):[];
+  if(list.length>=2){const old=S.fams;S.fams=list.slice(0,8).map((x,i)=>{const f=old[i]||newFam(x.name,x.leader);f.name=String(x.name).slice(0,28);f.leader=String(x.leader||'').slice(0,28);return f});if(S.turn>=S.fams.length)S.turn=0}
+  if(typeof c.subtitle==='string')S.subtitle=c.subtitle.slice(0,80);
+  const nb=Array.isArray(c.bank)?c.bank.filter(x=>x&&x.q).map(x=>({q:String(x.q),a:String(x.a||'')})):[], no=Array.isArray(c.off)?c.off.map(String):[];
+  if(JSON.stringify(nb)!==JSON.stringify(S.bank||[])||JSON.stringify(no)!==JSON.stringify(S.off||[])){S.bank=nb;S.off=no;S.order=null;S.q=0;S.rev=false}
+  if([1,2,3,0].includes(c.cannonLimit))S.cannonLimit=c.cannonLimit;
+  if([5000,10000,15000,20000].includes(c.reward))S.reward=c.reward;
+  if([15,20,30,45,60].includes(c.timerSec))S.timerSec=c.timerSec;
+  if(['both','buy','skip'].includes(c.wrongMode))S.wrongMode=c.wrongMode;
+  if(typeof c.noAttackR1==='boolean')S.noAttackR1=c.noAttackR1;
+  if([1,2,3].includes(c.attacksPerTurn))S.attacksPerTurn=c.attacksPerTurn;
+  S.cfgV=c.v;save();return true;
+}
+async function fetchCfg(){
+  try{const r=await fetch(CFG_API+'?ref=main&t='+Date.now(),{headers:{Accept:'application/vnd.github.raw+json'}});if(r.status===404)return null;if(r.ok)return await r.json()}catch(e){}
+  try{const r=await fetch('config.json?t='+Date.now(),{cache:'no-store'});if(r.ok)return await r.json()}catch(e){}
+  return null;
+}
+let lastSync=0;
+async function syncIn(force){
+  if(!force&&Date.now()-lastSync<30000)return;lastSync=Date.now();
+  const c=await fetchCfg();
+  if(c&&applyCfg(c)){render();toast('وصلت تحديثات المشرف')}
+}
+function b64utf8(str){const b=new TextEncoder().encode(str);let s='';for(let i=0;i<b.length;i+=8192)s+=String.fromCharCode.apply(null,b.subarray(i,i+8192));return btoa(s)}
+let pushing=false,pushT=null;
+async function pushCfg(manual){
+  const tok=getTok();if(!tok){if(manual)toast('أضف مفتاح النشر أول');return false}
+  if(pushing){clearTimeout(pushT);pushT=setTimeout(()=>pushCfg(manual),1500);return false}
+  pushing=true;const cfg=cfgFromState();
+  try{
+    const h={Authorization:'Bearer '+tok,Accept:'application/vnd.github+json'};
+    let sha;const g=await fetch(CFG_API+'?ref=main&t='+Date.now(),{headers:h});
+    if(g.ok)sha=(await g.json()).sha;else if(g.status!==404)throw new Error(String(g.status));
+    const body={message:'تحديث إعدادات المسابقة',content:b64utf8(JSON.stringify(cfg,null,1)),branch:'main'};if(sha)body.sha=sha;
+    const p=await fetch(CFG_API,{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},h),body:JSON.stringify(body)});
+    if(!p.ok)throw new Error(String(p.status));
+    S.cfgV=cfg.v;save();toast('انتشرت التعديلات لكل من عنده الرابط');return true;
+  }catch(e){toast(e.message==='401'||e.message==='403'?'مفتاح النشر غير صحيح أو ما عنده صلاحية':'تعذّر النشر، تأكد من الإنترنت');return false}
+  finally{pushing=false}
+}
+function cfgChanged(){if(!getTok())return;clearTimeout(pushT);pushT=setTimeout(()=>pushCfg(false),2500)}
+function syncBox(){
+  const on=!!getTok();
+  return `<div class="danger syncbox"><p style="font-size:15px;margin:0 0 8px"><b>مشاركة التعديلات مع الجميع</b><br>${on?'النشر مفعّل على هذا الجهاز: أي تعديل على الأسر أو العنوان أو الأسئلة أو الإعدادات يوصل لكل من عنده الرابط خلال ثواني.':'ضع مفتاح النشر هنا مرة وحدة على جهاز المشرف، وبعدها أي تعديل تسويه يوصل لكل من عنده الرابط.'}</p>
+  ${on?`<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn b-olive" id="sy_push" style="flex:1">انشر الحين</button><button class="btn b-ghost" id="sy_del" style="flex:1">إزالة المفتاح من هذا الجهاز</button></div>`
+  :`<div style="display:flex;gap:8px;flex-wrap:wrap"><input type="password" id="sy_tok" autocomplete="off" placeholder="مفتاح النشر (يبدأ بـ github_pat_)" style="flex:2;min-width:180px;font-family:inherit;font-size:15px;padding:8px 10px;border:1.5px solid var(--accent);border-radius:10px;background:var(--panel)"><button class="btn b-olive" id="sy_save" style="flex:1">حفظ وتفعيل</button></div>`}</div>`;
+}
+function wireSync(){
+  const sv=$('#sy_save'),ps=$('#sy_push'),dl=$('#sy_del');
+  if(sv)sv.onclick=async()=>{const t=$('#sy_tok').value.trim();if(!t){toast('الصق المفتاح أول');return}
+    try{localStorage.setItem(TKEY,t)}catch(e){toast('المتصفح ما سمح بالحفظ');return}
+    const ok=await pushCfg(true);if(!ok){try{localStorage.removeItem(TKEY)}catch(e){}}else{closeModal()}};
+  if(ps)ps.onclick=()=>pushCfg(true);
+  if(dl)dl.onclick=()=>{try{localStorage.removeItem(TKEY)}catch(e){}toast('انحذف المفتاح من هذا الجهاز');closeModal()};
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncIn(false)});
+
+load();render();timerShow();syncIn(true);
 /* ===== intro walkthrough ===== */
 const IKEY='barbarossa-intro-seen';
 let iIdx=0;
