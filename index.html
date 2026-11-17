@@ -434,6 +434,35 @@ button.opt:hover:not(:disabled){border-color:var(--olive);background:#fff}
 .tip .t-skip{background:none;color:#8f8775;margin-inline-start:auto;text-decoration:underline}
 @media (max-width:900px){.wgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.fa{display:none}}
 
+/* weapon cards */
+.modal.wide{width:min(820px,100%)}
+.cardgrid{display:grid;grid-template-columns:repeat(3,minmax(0,min(230px,calc((100vh - 230px)/2.83))));justify-content:center;gap:14px 18px}
+.wcard{position:relative;display:block;width:100%;aspect-ratio:1024/1448;padding:0;border:0;background:none;border-radius:10px;container-type:inline-size;transition:transform .15s, box-shadow .15s;box-shadow:0 8px 22px -14px rgba(0,0,0,.55)}
+.wcard:hover:not(:disabled){transform:translateY(-4px);box-shadow:0 16px 30px -14px rgba(0,0,0,.6)}
+.wcard:active:not(:disabled){transform:translateY(-1px) scale(.99)}
+.wcard.bought{animation:bought .6s}
+@keyframes bought{30%{transform:scale(1.05) rotate(-1deg)}}
+.wc-in{position:absolute;inset:0;overflow:hidden;border-radius:10px;display:flex;flex-direction:column;align-items:center;text-align:center;color:#494d3c;
+  background:radial-gradient(120% 80% at 30% 10%,#fffaf4,transparent 60%),radial-gradient(90% 70% at 80% 90%,#f3e8da,transparent 70%),#fbf3ea}
+.wc-frame{position:absolute;inset:2.3cqw;border:.32cqw solid #1f1f1a;pointer-events:none;z-index:2}
+.wc-h{margin-top:9.5cqw;font-size:4.2cqw;font-weight:800;color:#9b3b2a;line-height:1.3}
+.wc-n{margin-top:1cqw;font-size:10.5cqw;font-weight:900;line-height:1.25;white-space:nowrap}
+.wc-p{margin-top:4cqw;width:68cqw;height:43cqw;border:.35cqw solid #494d3c;border-radius:3cqw;background:#fffbf8;display:grid;place-items:center;flex:none}
+.wc-p svg{width:88%;height:auto;display:block}
+.wc-c{margin-top:4.4cqw;width:51cqw;padding:1.6cqw 0;border-radius:99px;background:#494d3c;color:#efe4d8;font-size:4.5cqw;font-weight:800;line-height:1.3;flex:none}
+.wcard.dbl .wc-c{background:#9b3b2a}
+.wc-e{margin-top:3.2cqw;width:76cqw;font-size:4.6cqw;font-weight:600;line-height:1.5;position:relative;z-index:1}
+.wc-dome{position:absolute;left:2.4cqw;bottom:2.4cqw;width:16.5cqw;height:auto}
+.wc-mount{position:absolute;right:2.4cqw;bottom:2.4cqw;width:39cqw;height:17.6cqw}
+.wc-own{position:absolute;top:4cqw;left:4cqw;z-index:3;background:#3f5a35;color:#fff;font-size:4.2cqw;font-weight:800;border-radius:99px;padding:.6cqw 3cqw}
+.wcard.off .wc-in{filter:grayscale(.75);opacity:.55}
+.wc-why{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%) rotate(-8deg);z-index:4;background:#9b3b2a;color:#fff;font-size:5.6cqw;font-weight:900;padding:1.6cqw 5cqw;border-radius:2cqw;white-space:nowrap;box-shadow:0 4px 14px -6px rgba(0,0,0,.6)}
+.wcard.off{cursor:not-allowed;opacity:1}
+.shop-tip{font-size:14px;color:#7c7564;margin:0 0 10px;text-align:center}
+@media (max-width:640px){
+  .cardgrid{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding:4px 2px 10px}
+  .cardgrid .wcard{flex:0 0 64vw;scroll-snap-align:center}
+}
 @media (max-width:1100px){
   .qpanel{grid-template-columns:1fr}
   .q-side{flex-direction:row;align-items:center;justify-content:space-between}
@@ -880,6 +909,7 @@ function banner(small,big,ms){
 
 /* ===== modal ===== */
 function modal(title,sub,body,buttons){
+  document.querySelector('#scrim .modal').classList.remove('wide');
   $('#mTitle').textContent=title;$('#mSub').innerHTML=sub||'';$('#mBody').innerHTML=body||'';
   const foot=$('#mFoot');foot.innerHTML='';
   (buttons||[]).forEach(b=>{const el=document.createElement('button');el.className='btn '+(b.cls||'b-ghost');el.innerHTML=b.t;
@@ -946,23 +976,53 @@ $('#qAttack').onclick=()=>{sfx.unlock();cancelAuto();attack(S.turn)};
 $('#qEnd').onclick=()=>{sfx.unlock();endTurn()};
 
 /* ===== shop ===== */
+/* ===== weapon cards (same design as the printed cards) ===== */
+const CARD_FX={cannon:'تقتل ٨ جنود، وتُستعمل مرة كل جولة',grenade:'تقتل ٤ جنود، وتُستعمل مرة واحدة فقط',disable:'تمنع إحدى الأسر من استخدام أسلحتها جولةً كاملة',anti:'يصدّ قذيفة واحدة فقط',armor:'يصدّ كل القنابل اليدوية طوال المسابقة',spy:'يزعزع جنود إحدى الأسر، ويقنع ١٠ منهم بالانسحاب والانضمام لجيشك',double:'تضاعف قوة القذيفة فلا يمكن صدّها وتقتل ١٦ جنديًا، بشرط الفوز في سؤال «أسرع جواب» بين الأسرتين'};
+const CARD_ART={
+cannon:'<svg viewBox="0 0 400 300"><ellipse cx="200" cy="268" rx="160" ry="10" fill="#e7dccd"/><circle cx="352" cy="78" r="16" fill="#d9d1c4"/><circle cx="372" cy="58" r="11" fill="#e2dbcf"/><circle cx="336" cy="60" r="9" fill="#e2dbcf"/><g transform="rotate(-16 210 150)"><rect x="92" y="118" width="232" height="64" rx="30" fill="#363a2c"/><rect x="304" y="110" width="30" height="80" rx="12" fill="#494d3c"/><rect x="140" y="112" width="18" height="76" rx="6" fill="#5d624d"/><rect x="218" y="114" width="16" height="72" rx="6" fill="#5d624d"/><circle cx="88" cy="150" r="20" fill="#494d3c"/></g><path d="M112 206 L248 172 L268 218 L126 246 Z" fill="#6b4f35"/><circle cx="172" cy="220" r="42" fill="none" stroke="#6b4f35" stroke-width="12"/><path d="M172 182V258M134 220H210M145 193L199 247M199 193L145 247" stroke="#6b4f35" stroke-width="6"/><circle cx="172" cy="220" r="10" fill="#3b2f22"/><circle cx="298" cy="248" r="17" fill="#363a2c"/><circle cx="334" cy="248" r="17" fill="#363a2c"/><circle cx="316" cy="220" r="17" fill="#363a2c"/></svg>',
+grenade:'<svg viewBox="0 0 400 300"><ellipse cx="200" cy="272" rx="110" ry="9" fill="#e7dccd"/><ellipse cx="196" cy="180" rx="76" ry="88" fill="#494d3c"/><path d="M126 140H266M122 180H270M126 220H266M160 96V264M196 92V268M232 96V264" stroke="#363a2c" stroke-width="6"/><rect x="170" y="70" width="52" height="30" rx="6" fill="#363a2c"/><path d="M222 74 C262 74 278 110 272 160 L258 158 C262 116 250 92 222 92Z" fill="#8f8775"/><circle cx="160" cy="70" r="17" fill="none" stroke="#b8902f" stroke-width="7"/></svg>',
+disable:'<svg viewBox="0 0 400 300"><path d="M200 64V170M150 110H250" stroke="#3b2f22" stroke-width="7"/><path d="M204 70C238 82 246 124 238 160H204Z" fill="#8a6a45"/><path d="M196 82C170 96 166 132 172 160H196Z" fill="#a98b66"/><path d="M118 170H282L262 210C232 220 168 220 138 210Z" fill="#6b4f35"/><circle cx="200" cy="150" r="112" fill="none" stroke="#9b3b2a" stroke-width="24"/><path d="M121 71 L279 229" stroke="#9b3b2a" stroke-width="24" stroke-linecap="round"/></svg>',
+anti:'<svg viewBox="0 0 400 300"><path d="M200 34 L300 72 V148 C300 214 258 258 200 282 C142 258 100 214 100 148 V72 Z" fill="#494d3c"/><path d="M200 62 L276 90 V150 C276 200 244 236 200 254 C156 236 124 200 124 150 V90 Z" fill="#efe4d8"/><path d="M200 92 L250 112 V152 C250 186 230 208 200 222 C170 208 150 186 150 152 V112 Z" fill="#3f5a35"/><circle cx="340" cy="70" r="15" fill="#363a2c"/><path d="M314 84 L292 98M330 100 L318 120M300 66 L278 64" stroke="#b8902f" stroke-width="7" stroke-linecap="round"/></svg>',
+armor:'<svg viewBox="0 0 400 300"><path d="M204 78 C226 26 300 20 330 66 C298 52 262 58 236 92 Z" fill="#9b3b2a"/><path d="M128 250 V166 C128 106 164 76 200 76 C236 76 272 106 272 166 V250 Z" fill="#494d3c"/><path d="M200 78 V250" stroke="#363a2c" stroke-width="6"/><rect x="140" y="150" width="120" height="12" rx="4" fill="#efe4d8"/><rect x="140" y="172" width="120" height="8" rx="4" fill="#efe4d8"/><path d="M168 200V236M184 200V236M216 200V236M232 200V236" stroke="#efe4d8" stroke-width="6" stroke-linecap="round"/><rect x="108" y="246" width="184" height="24" rx="8" fill="#363a2c"/></svg>',
+spy:'<svg viewBox="0 0 400 300"><path d="M104 286 C114 222 156 200 200 200 C244 200 286 222 296 286 Z" fill="#363a2c"/><path d="M200 204 L168 286 H150 L176 206Z M200 204 L232 286 H250 L224 206Z" fill="#8a6a45"/><ellipse cx="200" cy="158" rx="54" ry="60" fill="#e7d3bd"/><ellipse cx="200" cy="108" rx="116" ry="18" fill="#363a2c"/><path d="M138 108 C142 46 258 46 262 108Z" fill="#363a2c"/><rect x="139" y="88" width="122" height="14" fill="#9b3b2a"/><circle cx="178" cy="160" r="19" fill="#2b2b26"/><circle cx="222" cy="160" r="19" fill="#2b2b26"/><path d="M197 158H203" stroke="#2b2b26" stroke-width="6"/><path d="M182 196 Q200 204 218 196" stroke="#8a6a45" stroke-width="5" fill="none"/></svg>',
+double:'<svg viewBox="0 0 400 300"><text x="200" y="215" text-anchor="middle" direction="ltr" font-family="Cairo,sans-serif" font-weight="900" font-size="200" fill="#494d3c">×٢</text></svg>'
+};
+const CARD_DOME='<svg class="wc-dome" viewBox="0 0 170 230"><rect x="24" y="150" width="122" height="80" fill="#e6ddcf"/><rect x="18" y="140" width="134" height="14" fill="#d8cdbb"/><path d="M30 142 C30 84 140 84 140 142Z" fill="#4f7a5c"/><path d="M85 78V60" stroke="#b8902f" stroke-width="4"/><circle cx="85" cy="56" r="5" fill="#b8902f"/><rect x="4" y="60" width="14" height="170" fill="#e6ddcf"/><path d="M2 62 L11 26 L20 62Z" fill="#4f7a5c"/><path d="M11 26V10" stroke="#b8902f" stroke-width="3"/></svg>';
+const CARD_MOUNT='<svg class="wc-mount" viewBox="0 0 400 180" preserveAspectRatio="none"><path d="M0 180 L70 120 L120 140 L210 50 L270 100 L320 60 L400 110 V180Z" fill="#8a6a45" opacity=".55"/><path d="M60 180 L150 110 L200 130 L290 70 L400 140 V180Z" fill="#6b4f35" opacity=".75"/><path d="M140 180 Q260 150 400 165 V180Z" fill="#a9bdb4" opacity=".7"/></svg>';
+function weaponCard(k,opt){
+  opt=opt||{};
+  const cost=k==='double'?'يُستخدم مرة واحدة':'التكلفة: '+money(W[k].p);
+  return `<button class="wcard ${opt.why?'off':''} ${k==='double'?'dbl':''}" data-buy="${k}" ${opt.why?'disabled':''} aria-label="${W[k].n}">
+    <span class="wc-in"><i class="wc-frame"></i>
+      <span class="wc-h">الأخوان بربروسا</span>
+      <span class="wc-n">${W[k].n}</span>
+      <span class="wc-p">${CARD_ART[k]}</span>
+      <span class="wc-c">${cost}</span>
+      <span class="wc-e">${CARD_FX[k]}</span>
+      ${CARD_DOME}${CARD_MOUNT}
+      ${opt.own?`<span class="wc-own">عندكم ×${ar(opt.own)}</span>`:''}
+      ${opt.why?`<span class="wc-why">${opt.why}</span>`:''}
+    </span></button>`;
+}
 function shop(i){
   const f=S.fams[i];
-  const rows=SHOP.map(k=>{
+  const cards=SHOP.map(k=>{
     let why='';
     if(k==='armor'&&f.inv.armor)why='عندكم';
     else if(k==='cannon'&&S.cannonLimit>0&&f.inv.cannon>=S.cannonLimit)why='وصلتم الحد';
     else if(f.money<W[k].p)why='الرصيد ما يكفي';
-    return `<button class="opt" data-buy="${k}" ${why?'disabled':''}>
-      <span class="ic">${ICON[k]}</span>
-      <span><span class="t">${W[k].n}</span><br><span class="d">${W[k].d}</span></span>
-      <span class="p">${money(W[k].p)}${why?`<span class="no">${why}</span>`:''}</span></button>`;
+    return weaponCard(k,{why,own:k==='armor'?0:f.inv[k]});
   }).join('');
-  modal('سوق السلاح',`${esc(f.name)} · الرصيد: <b>${money(f.money)}</b>`,`<div class="list">${rows}</div>`,[{t:'تم',cls:'b-olive'}]);
+  const sc=document.querySelector('#mBody .cardgrid'),keep=sc?sc.scrollLeft:0;
+  modal('سوق السلاح',`${esc(f.name)} · الرصيد: <b>${money(f.money)}</b>`,`<p class="shop-tip">اضغط على البطاقة لشرائها</p><div class="cardgrid">${cards}</div>`,[{t:'تم',cls:'b-olive'}]);
+  document.querySelector('#scrim .modal').classList.add('wide');
+  const g=$('#mBody .cardgrid');if(g)g.scrollLeft=keep;
   $('#mBody').querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{
     const k=b.dataset.buy;sfx.cash();
     act(()=>{f.money-=W[k].p;f.inv[k]++;log(`${f.name} اشترت ${W[k].n} بـ${money(W[k].p)}`,'');FX.push({i,t:W[k].n,k:'buy'})});
     shop(i);
+    const nb=document.querySelector(`#mBody [data-buy="${k}"]`);if(nb){nb.classList.add('bought')}
+    toast(`تم شراء ${W[k].n}`);
   });
 }
 
