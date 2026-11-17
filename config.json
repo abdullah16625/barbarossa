@@ -1,0 +1,26 @@
+{
+ "v": 1794911592480,
+ "fams": [
+  {
+   "name": "أسرة بدر",
+   "leader": "إلياس الدويش"
+  },
+  {
+   "name": "أسرة أُحد",
+   "leader": "عبدالعزيز خلبوص"
+  },
+  {
+   "name": "أسرة الخندق",
+   "leader": "موسى الحراسي"
+  }
+ ],
+ "subtitle": "أسوة · سفرة المدينة ٤٨ · المسابقة الثقافية",
+ "bank": [],
+ "off": [],
+ "cannonLimit": 1,
+ "reward": 10000,
+ "timerSec": 30,
+ "wrongMode": "both",
+ "noAttackR1": true,
+ "attacksPerTurn": 1
+}
